@@ -1492,11 +1492,23 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 /* ══ 관리자 비밀번호 ══ */
 const ADMIN_PASSWORD = "admin1234";
 let isAdmin = false;
+
 function checkAdmin() {
   if (isAdmin) return true;
   const pw = prompt('관리자 비밀번호를 입력하세요:');
   if (pw === ADMIN_PASSWORD) { isAdmin = true; showToast('✅ 관리자 모드로 로그인되었습니다.'); return true; }
   showToast('❌ 비밀번호가 올바르지 않습니다.'); return false;
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3200);
+}
+
+function esc(s) {
+  if (!s) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
 const GL = {
@@ -1509,36 +1521,39 @@ let works = [];
 let myLikes = JSON.parse(localStorage.getItem('career_my_likes') || '{}');
 let filter = 'all';
 let files = [];
+let editFiles = [];
+let awFiles = [];
+let selectedAward = { award: '', icon: '' };
 
-/* ── 데이터 로드 (works 테이블 하나만 사용) ── */
+/* ── 데이터 로드 ── */
 async function loadWorks() {
-  const { data } = await sb.from('works').select('*').order('created_at', { ascending: false });
-  works = data || [];
-  renderWorks();
-  renderAwards();
+  try {
+    const { data, error } = await sb.from('works').select('*').order('created_at', { ascending: false });
+    if (error) { console.error('loadWorks error:', error); showToast('❌ 데이터 로드 실패: ' + error.message); return; }
+    works = data || [];
+    renderWorks();
+    renderAwards();
+  } catch(e) { console.error(e); }
 }
 
 /* ── 실시간 구독 ── */
-sb.channel('works-channel')
+sb.channel('works-realtime')
   .on('postgres_changes', { event: '*', schema: 'public', table: 'works' }, () => loadWorks())
   .subscribe();
 
 function updateStats() {
   const n = works.length;
-  document.getElementById('hero-count').textContent = n + '점';
-  document.getElementById('gallery-count').textContent = n;
+  const hc = document.getElementById('hero-count');
+  const gc = document.getElementById('gallery-count');
+  if (hc) hc.textContent = n + '점';
+  if (gc) gc.textContent = n;
 }
 
-function showLoading(on) {
-  const el = document.getElementById('gallery-loading');
-  if (el) el.style.display = on ? 'block' : 'none';
-}
-
-/* ── 전시 갤러리 렌더링 (모든 작품, 수상작 메달 표시) ── */
+/* ── 전시 갤러리 렌더링 (모든 작품) ── */
 function renderWorks() {
   const grid = document.getElementById('work-grid');
+  if (!grid) return;
   const list = filter === 'all' ? works : works.filter(w => w.grade === filter);
-  showLoading(false);
   updateStats();
 
   if (!list.length) {
@@ -1549,7 +1564,7 @@ function renderWorks() {
   grid.innerHTML = list.map((w, i) => {
     const g = GL[w.grade] || GL['1'];
     const liked = !!myLikes[w.id];
-    const medalBadge = w.icon ? `<div style="position:absolute;top:10px;left:10px;font-size:28px;z-index:3;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.4));">${w.icon}</div>` : '';
+    const medalBadge = w.icon ? `<div style="position:absolute;top:10px;left:10px;font-size:26px;z-index:3;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.5));">${w.icon}</div>` : '';
     return `
     <div class="work-card" style="animation-delay:${i * 0.06}s;position:relative;">
       ${medalBadge}
@@ -1587,9 +1602,10 @@ function renderWorks() {
   }).join('');
 }
 
-/* ── 수상작 섹션 렌더링 (수상 등록된 것만) ── */
+/* ── 수상작 섹션 렌더링 (award 있는 것만) ── */
 function renderAwards() {
   const grid = document.getElementById('award-grid');
+  if (!grid) return;
   const awardList = works.filter(w => w.award && w.award !== '');
   if (!awardList.length) {
     grid.innerHTML = `<div class="award-empty"><div class="ae-en">No awards yet</div><div class="ae-kr">수상작이 아직 등록되지 않았습니다.</div></div>`;
@@ -1600,9 +1616,7 @@ function renderAwards() {
       ${w.icon ? `<div class="award-badge ${awardBadgeClass(w.award)}">${w.icon}</div>` : ''}
       <div class="award-card-mat">
         <div class="award-thumb">
-          ${w.img_src
-            ? `<img src="${w.img_src}" alt="${esc(w.title)}">`
-            : `<div class="award-thumb-ph"><div style="font-size:28px">◈</div></div>`}
+          ${w.img_src ? `<img src="${w.img_src}" alt="${esc(w.title)}">` : `<div class="award-thumb-ph"><div style="font-size:28px">◈</div></div>`}
         </div>
       </div>
       <div class="award-body">
@@ -1624,25 +1638,28 @@ function awardBadgeClass(award) {
   return '';
 }
 
-window.filterWorks = (g, btn) => {
+/* ── 필터 ── */
+function filterWorks(g, btn) {
   filter = g;
   document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   renderWorks();
-};
+}
+window.filterWorks = filterWorks;
 
 /* ── 좋아요 ── */
-window.toggleLike = async (id, current) => {
+async function toggleLike(id, current) {
   const liked = !!myLikes[id];
   const next  = liked ? Math.max(0, current - 1) : current + 1;
   if (liked) delete myLikes[id]; else myLikes[id] = true;
   localStorage.setItem('career_my_likes', JSON.stringify(myLikes));
   await sb.from('works').update({ likes: next }).eq('id', id);
   loadWorks();
-};
+}
+window.toggleLike = toggleLike;
 
 /* ── 상세 모달 ── */
-window.openModal = (id) => {
+function openModal(id) {
   const w = works.find(x => x.id === id); if (!w) return;
   const g = GL[w.grade] || GL['1'];
   document.getElementById('m-accent').className = 'modal-accent ' + g.accentClass;
@@ -1667,12 +1684,13 @@ window.openModal = (id) => {
   else { img.style.display = 'none'; img.onclick = null; }
   document.getElementById('modal-bd').classList.add('open');
   document.body.style.overflow = 'hidden';
-};
-window.closeBg   = (e) => { if (e.target === document.getElementById('modal-bd')) closeModal(); };
+}
+window.openModal  = openModal;
+window.closeBg    = (e) => { if (e.target === document.getElementById('modal-bd')) closeModal(); };
 window.closeModal = () => { document.getElementById('modal-bd').classList.remove('open'); document.body.style.overflow = ''; };
 
-/* ── 수상작 상세 모달 ── */
-window.openAwardModal = (id) => {
+/* ── 수상작 모달 ── */
+function openAwardModal(id) {
   const w = works.find(x => x.id === id); if (!w) return;
   document.getElementById('am-icon').textContent       = w.icon || '';
   document.getElementById('am-award-name').textContent = w.award || '';
@@ -1692,18 +1710,29 @@ window.openAwardModal = (id) => {
   else { img.style.display='none'; img.onclick=null; }
   document.getElementById('award-modal-bd').classList.add('open');
   document.body.style.overflow='hidden';
-};
+}
+window.openAwardModal    = openAwardModal;
 window.closeAwardModalBg = e => { if(e.target===document.getElementById('award-modal-bd')) closeAwardModal(); };
 window.closeAwardModal   = () => { document.getElementById('award-modal-bd').classList.remove('open'); document.body.style.overflow=''; };
 
+/* ── 라이트박스 ── */
+function openLightbox(src, title) {
+  document.getElementById('lb-img').src = src;
+  document.getElementById('lb-caption').textContent = title||'';
+  document.getElementById('lightbox').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  document._lbEsc = e => { if(e.key==='Escape') closeLightbox(); };
+  document.addEventListener('keydown', document._lbEsc);
+}
+function closeLightbox() {
+  document.getElementById('lightbox').classList.remove('open');
+  document.body.style.overflow = '';
+  document.removeEventListener('keydown', document._lbEsc);
+}
+window.openLightbox  = openLightbox;
+window.closeLightbox = closeLightbox;
+
 /* ── 파일 업로드 ── */
-const dz = document.getElementById('drop-zone');
-const fi = document.getElementById('file-input');
-const dp = document.getElementById('dz-preview');
-dz.addEventListener('dragover',  e => { e.preventDefault(); dz.classList.add('drag-over'); });
-dz.addEventListener('dragleave', () => dz.classList.remove('drag-over'));
-dz.addEventListener('drop', e => { e.preventDefault(); dz.classList.remove('drag-over'); handleFiles(e.dataTransfer.files); });
-fi.addEventListener('change', e => handleFiles(e.target.files));
 function handleFiles(flist) {
   Array.from(flist).forEach(f => {
     if (f.size > 10*1024*1024) { showToast('파일 크기는 10MB 이하여야 합니다.'); return; }
@@ -1713,23 +1742,28 @@ function handleFiles(flist) {
   });
 }
 function renderPreview() {
+  const dp = document.getElementById('dz-preview');
+  if (!dp) return;
   if (!files.length) { dp.classList.remove('show'); dp.innerHTML = ''; return; }
   dp.classList.add('show');
   dp.innerHTML = files.map((f,i) => `<div class="dz-thumb"><img src="${f.src}"><button class="dz-thumb-del" onclick="removeFile(${i})">✕</button></div>`).join('');
 }
-window.removeFile = i => { files.splice(i,1); renderPreview(); };
+function removeFile(i) { files.splice(i,1); renderPreview(); }
+window.removeFile = removeFile;
 
-/* ── 일반 작품 등록 (award 없음) ── */
-window.submitWork = async () => {
+/* ── 일반 작품 등록 ── */
+async function submitWork() {
   if (!checkAdmin()) return;
   const grade = document.getElementById('inp-grade').value;
   const cls   = document.getElementById('inp-class').value;
   const name  = document.getElementById('inp-name').value.trim();
   const title = document.getElementById('inp-title').value.trim();
   if (!grade||!cls||!name||!title) { showToast('학년, 반, 이름, 작품 제목은 필수입니다.'); return; }
-  const btns = document.querySelectorAll('.submit-btn');
-  btns.forEach(b => { b.textContent = '등록 중...'; b.disabled = true; });
-  const { error } = await sb.from('works').insert({
+
+  const btn = document.querySelector('#upload .submit-btn');
+  if (btn) { btn.textContent = '등록 중...'; btn.disabled = true; }
+
+  const { error } = await sb.from('works').insert([{
     sid:      document.getElementById('inp-sid').value.trim(),
     grade, cls, name, title,
     question: document.getElementById('inp-question').value.trim(),
@@ -1738,21 +1772,27 @@ window.submitWork = async () => {
     univ:     document.getElementById('inp-univ').value.trim(),
     hs:       document.getElementById('inp-hs').value.trim(),
     img_src:  files.length ? files[0].src : null,
-    likes: 0,
-    award: null, icon: null,
-  });
-  btns.forEach(b => { b.textContent = 'Register Work'; b.disabled = false; });
-  if (error) { showToast('❌ 등록 실패: ' + error.message); return; }
+    likes:    0,
+    award:    null,
+    icon:     null,
+  }]);
+
+  if (btn) { btn.textContent = 'Register Work'; btn.disabled = false; }
+  if (error) { showToast('❌ 등록 실패: ' + error.message); console.error(error); return; }
+
   ['inp-sid','inp-grade','inp-class','inp-name','inp-title','inp-question','inp-job','inp-dept','inp-univ','inp-hs']
     .forEach(id => { document.getElementById(id).value = ''; });
-  files = []; renderPreview(); fi.value = '';
+  files = []; renderPreview();
+  const fi = document.getElementById('file-input');
+  if (fi) fi.value = '';
   showToast('✅ 작품이 등록됐습니다!');
+  await loadWorks();
   setTimeout(() => document.getElementById('gallery').scrollIntoView({ behavior:'smooth' }), 700);
-};
+}
+window.submitWork = submitWork;
 
 /* ── 수정 모달 ── */
-let editFiles = [];
-window.openEdit = (id) => {
+function openEdit(id) {
   if (!checkAdmin()) return;
   const w = works.find(x=>x.id===id); if(!w) return;
   document.getElementById('edit-id').value       = id;
@@ -1771,18 +1811,12 @@ window.openEdit = (id) => {
   if (w.img_src) { ci.src=w.img_src; ci.style.display='block'; cb.style.display='inline-block'; }
   else           { ci.style.display='none'; cb.style.display='none'; }
   editFiles=[];
-  document.getElementById('edit-file').value='';
+  const ef = document.getElementById('edit-file');
+  if (ef) ef.value='';
   document.getElementById('edit-bd').classList.add('open');
   document.body.style.overflow='hidden';
-};
-window.closeEditBg  = e => { if(e.target===document.getElementById('edit-bd')) closeEdit(); };
-window.closeEdit    = () => { document.getElementById('edit-bd').classList.remove('open'); document.body.style.overflow=''; editFiles=[]; };
-window.clearEditImg = () => {
-  document.getElementById('edit-current-img').style.display='none';
-  document.getElementById('edit-img-clear').style.display='none';
-  editFiles=[];
-};
-window.saveEdit = async () => {
+}
+async function saveEdit() {
   const id    = document.getElementById('edit-id').value;
   const grade = document.getElementById('edit-grade').value;
   const cls   = document.getElementById('edit-class').value;
@@ -1802,22 +1836,28 @@ window.saveEdit = async () => {
   if(editFiles.length>0){ updated.img_src=editFiles[0].src; }
   else if(ci.style.display==='none'){ updated.img_src=null; }
   const { error } = await sb.from('works').update(updated).eq('id', id);
-  if(error){ showToast('❌ 수정 실패'); return; }
+  if(error){ showToast('❌ 수정 실패: '+error.message); return; }
   closeEdit(); showToast('✅ 작품이 수정되었습니다.');
-};
-window.deleteWork = async () => {
+  await loadWorks();
+}
+async function deleteWork() {
   const id = document.getElementById('edit-id').value;
   if(!confirm('이 작품을 삭제하시겠습니까?')) return;
   const { error } = await sb.from('works').delete().eq('id', id);
   if(error){ showToast('❌ 삭제 실패'); return; }
   closeEdit(); showToast('✅ 작품이 삭제되었습니다.');
-};
-const edz=document.getElementById('edit-dz');
-const efi=document.getElementById('edit-file');
-edz.addEventListener('dragover', e=>{e.preventDefault();edz.classList.add('drag-over');});
-edz.addEventListener('dragleave',()=>edz.classList.remove('drag-over'));
-edz.addEventListener('drop',e=>{e.preventDefault();edz.classList.remove('drag-over');handleEditFiles(e.dataTransfer.files);});
-efi.addEventListener('change',e=>handleEditFiles(e.target.files));
+  await loadWorks();
+}
+function closeEdit() { document.getElementById('edit-bd').classList.remove('open'); document.body.style.overflow=''; editFiles=[]; }
+function clearEditImg() {
+  document.getElementById('edit-current-img').style.display='none';
+  document.getElementById('edit-img-clear').style.display='none';
+  editFiles=[];
+}
+window.openEdit = openEdit; window.saveEdit = saveEdit; window.deleteWork = deleteWork;
+window.closeEdit = closeEdit; window.clearEditImg = clearEditImg;
+window.closeEditBg = e => { if(e.target===document.getElementById('edit-bd')) closeEdit(); };
+
 function handleEditFiles(flist){
   const f=flist[0]; if(!f) return;
   if(f.size>10*1024*1024){showToast('파일 크기는 10MB 이하여야 합니다.');return;}
@@ -1831,43 +1871,26 @@ function handleEditFiles(flist){
   r.readAsDataURL(f);
 }
 
-/* ── 수상작 파일 ── */
-let awFiles = [];
-let selectedAward = { award: '', icon: '' };
-window.selectAward = (btn) => {
+/* ── 수상작 등록 ── */
+function selectAward(btn) {
   document.querySelectorAll('.award-pick-btn').forEach(b => b.classList.remove('selected'));
   btn.classList.add('selected');
   selectedAward = { award: btn.dataset.award, icon: btn.dataset.icon };
-};
-const awDz = document.getElementById('aw-drop-zone');
-const awFi = document.getElementById('aw-file-input');
-const awDp = document.getElementById('aw-dz-preview');
-awDz.addEventListener('dragover', e=>{e.preventDefault();awDz.classList.add('drag-over');});
-awDz.addEventListener('dragleave',()=>awDz.classList.remove('drag-over'));
-awDz.addEventListener('drop',e=>{e.preventDefault();awDz.classList.remove('drag-over');handleAwFiles(e.dataTransfer.files);});
-awFi.addEventListener('change',e=>handleAwFiles(e.target.files));
-function handleAwFiles(flist) {
-  const f=flist[0]; if(!f) return;
-  if(f.size>10*1024*1024){showToast('파일 크기는 10MB 이하여야 합니다.');return;}
-  const r=new FileReader();
-  r.onload=ev=>{awFiles=[{src:ev.target.result}];renderAwPreview();};
-  r.readAsDataURL(f);
 }
-function renderAwPreview(){
-  if(!awFiles.length){awDp.classList.remove('show');awDp.innerHTML='';return;}
-  awDp.classList.add('show');
-  awDp.innerHTML=`<div class="dz-thumb"><img src="${awFiles[0].src}"></div>`;
-}
+window.selectAward = selectAward;
 
-/* ── 수상작 등록 (works 테이블에 award 포함해서 저장) ── */
-window.submitAward = async () => {
+async function submitAward() {
   if (!checkAdmin()) return;
   const name  = document.getElementById('aw-name').value.trim();
   const grade = document.getElementById('aw-grade').value;
   const cls   = document.getElementById('aw-class').value;
   const title = document.getElementById('aw-title').value.trim();
   if (!name||!grade||!cls||!title) { showToast('이름, 학년, 반, 작품 제목은 필수입니다.'); return; }
-  const { error } = await sb.from('works').insert({
+
+  const btn = document.querySelector('.award-form-wrap .submit-btn');
+  if (btn) { btn.textContent = '등록 중...'; btn.disabled = true; }
+
+  const { error } = await sb.from('works').insert([{
     sid:      document.getElementById('aw-sid').value.trim(),
     name, grade, cls, title,
     question: document.getElementById('aw-question').value.trim(),
@@ -1876,44 +1899,69 @@ window.submitAward = async () => {
     award:    selectedAward.award || null,
     icon:     selectedAward.icon  || null,
     img_src:  awFiles.length ? awFiles[0].src : null,
-    likes: 0,
-  });
-  if (error) { showToast('❌ 등록 실패: ' + error.message); return; }
+    likes:    0,
+  }]);
+
+  if (btn) { btn.textContent = '수상작 등록하기'; btn.disabled = false; }
+  if (error) { showToast('❌ 등록 실패: ' + error.message); console.error(error); return; }
+
   ['aw-sid','aw-name','aw-grade','aw-class','aw-title','aw-question','aw-job','aw-dept']
     .forEach(id=>{document.getElementById(id).value='';});
   document.querySelectorAll('.award-pick-btn').forEach(b=>b.classList.remove('selected'));
   selectedAward={award:'',icon:''};
-  awFiles=[]; renderAwPreview(); awFi.value='';
+  awFiles=[]; renderAwPreview();
+  const awFi = document.getElementById('aw-file-input');
+  if (awFi) awFi.value='';
   showToast('✅ 수상작이 등록됐습니다!');
+  await loadWorks();
   setTimeout(()=>document.getElementById('awards').scrollIntoView({behavior:'smooth'}),600);
-};
-
-/* ── 유틸 ── */
-window.openLightbox = (src, title) => {
-  document.getElementById('lb-img').src = src;
-  document.getElementById('lb-caption').textContent = title||'';
-  document.getElementById('lightbox').classList.add('open');
-  document.body.style.overflow = 'hidden';
-  document._lbEsc = e => { if(e.key==='Escape') closeLightbox(); };
-  document.addEventListener('keydown', document._lbEsc);
-};
-window.closeLightbox = () => {
-  document.getElementById('lightbox').classList.remove('open');
-  document.body.style.overflow = '';
-  document.removeEventListener('keydown', document._lbEsc);
-};
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg; t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 3200);
 }
-function esc(s) {
-  if (!s) return '';
-  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+window.submitAward = submitAward;
+
+function handleAwFiles(flist) {
+  const f=flist[0]; if(!f) return;
+  if(f.size>10*1024*1024){showToast('파일 크기는 10MB 이하여야 합니다.');return;}
+  const r=new FileReader();
+  r.onload=ev=>{awFiles=[{src:ev.target.result}];renderAwPreview();};
+  r.readAsDataURL(f);
+}
+function renderAwPreview(){
+  const awDp = document.getElementById('aw-dz-preview');
+  if (!awDp) return;
+  if(!awFiles.length){awDp.classList.remove('show');awDp.innerHTML='';return;}
+  awDp.classList.add('show');
+  awDp.innerHTML=`<div class="dz-thumb"><img src="${awFiles[0].src}"></div>`;
 }
 
-/* ── 시작 ── */
-loadWorks();
+/* ── 이벤트 리스너 연결 (DOM 로드 후) ── */
+document.addEventListener('DOMContentLoaded', () => {
+  const dz = document.getElementById('drop-zone');
+  const fi = document.getElementById('file-input');
+  if (dz && fi) {
+    dz.addEventListener('dragover',  e => { e.preventDefault(); dz.classList.add('drag-over'); });
+    dz.addEventListener('dragleave', () => dz.classList.remove('drag-over'));
+    dz.addEventListener('drop', e => { e.preventDefault(); dz.classList.remove('drag-over'); handleFiles(e.dataTransfer.files); });
+    fi.addEventListener('change', e => handleFiles(e.target.files));
+  }
+  const edz = document.getElementById('edit-dz');
+  const efi = document.getElementById('edit-file');
+  if (edz && efi) {
+    edz.addEventListener('dragover', e=>{e.preventDefault();edz.classList.add('drag-over');});
+    edz.addEventListener('dragleave',()=>edz.classList.remove('drag-over'));
+    edz.addEventListener('drop',e=>{e.preventDefault();edz.classList.remove('drag-over');handleEditFiles(e.dataTransfer.files);});
+    efi.addEventListener('change',e=>handleEditFiles(e.target.files));
+  }
+  const awDz = document.getElementById('aw-drop-zone');
+  const awFi = document.getElementById('aw-file-input');
+  if (awDz && awFi) {
+    awDz.addEventListener('dragover', e=>{e.preventDefault();awDz.classList.add('drag-over');});
+    awDz.addEventListener('dragleave',()=>awDz.classList.remove('drag-over'));
+    awDz.addEventListener('drop',e=>{e.preventDefault();awDz.classList.remove('drag-over');handleAwFiles(e.dataTransfer.files);});
+    awFi.addEventListener('change',e=>handleAwFiles(e.target.files));
+  }
+
+  loadWorks();
+});
 </script>
 </body>
 </html>
