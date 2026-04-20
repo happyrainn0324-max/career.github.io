@@ -1,0 +1,1944 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Question-based Career Design — 질문기반 진로설계 공모전 전시</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=IM+Fell+English:ital@0;1&family=Dancing+Script:wght@400;500;600;700&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Noto+Serif+KR:wght@300;400;500;600&family=Noto+Sans+KR:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --cream:    #F7F3EC;
+  --cream2:   #EFE9DD;
+  --parchment:#E8DFC8;
+  --gold:     #B8965A;
+  --gold-l:   #D4B483;
+  --gold-ll:  #F0E4C8;
+  --charcoal: #2C2820;
+  --ink:      #3D3428;
+  --ink-mid:  #6B5F4E;
+  --ink-l:    #A89880;
+  --ink-ll:   #D4C8B5;
+  --white:    #FDFAF6;
+  --rose:     #C4887A;
+  --fd: 'Cormorant Garamond', 'IM Fell English', serif;
+  --fk: 'Noto Serif KR', serif;
+  --fb: 'Noto Sans KR', sans-serif;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--fk);
+  background: var(--cream);
+  color: var(--ink);
+  overflow-x: hidden;
+  cursor: default;
+}
+
+/* ── GRAIN OVERLAY ── */
+body::before {
+  content: '';
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  background-size: 200px;
+  opacity: 0.45;
+  mix-blend-mode: multiply;
+}
+
+/* ── NAV ── */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  background: rgba(247, 243, 236, 0.92);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--ink-ll);
+}
+.nav-in {
+  max-width: 1300px; margin: 0 auto; padding: 0 48px;
+  height: 88px; display: flex; align-items: center; justify-content: space-between;
+}
+.nav-logo-block { display: flex; flex-direction: column; line-height: 1; }
+.nav-logo-en {
+  font-family: var(--fd); font-size: 26px; font-style: italic;
+  color: var(--gold); letter-spacing: 0.5px; font-weight: 400;
+}
+.nav-logo-kr {
+  font-family: var(--fk); font-size: 18px; color: var(--ink-mid);
+  font-weight: 300; letter-spacing: 1px; margin-top: 6px;
+}
+.nav-rule {
+  flex: 1; height: 1px; background: var(--ink-ll);
+  margin: 0 32px;
+}
+.nav-links { display: flex; gap: 28px; list-style: none; margin-right: 24px; }
+.nav-links a {
+  font-family: var(--fd); font-size: 14px; font-style: italic;
+  color: var(--ink-mid); text-decoration: none; letter-spacing: 0.3px;
+  transition: color 0.2s;
+}
+.nav-links a:hover { color: var(--gold); }
+.nav-upload-btn {
+  font-family: var(--fk); font-size: 13px; font-weight: 500;
+  color: var(--white); background: var(--charcoal);
+  padding: 8px 22px; border-radius: 0; border: none;
+  cursor: pointer; letter-spacing: 1.5px; text-transform: uppercase;
+  text-decoration: none; display: inline-block;
+  transition: background 0.25s; white-space: nowrap;
+}
+.nav-upload-btn:hover { background: var(--gold); }
+
+/* ── HERO / EXHIBITION HEADER ── */
+.hero {
+  min-height: 100vh;
+  background: var(--charcoal);
+  display: flex; align-items: center; justify-content: center;
+  position: relative; overflow: hidden; padding-top: 88px;
+}
+
+/* large decorative text */
+.hero-bg-text {
+  position: absolute;
+  font-family: var(--fd); font-size: clamp(120px, 18vw, 220px);
+  font-weight: 300; font-style: italic;
+  color: rgba(184, 150, 90, 0.07);
+  white-space: nowrap; pointer-events: none; user-select: none;
+  top: 50%; left: 50%; transform: translate(-50%, -50%);
+  letter-spacing: -4px;
+}
+
+/* thin ornamental lines */
+.hero-lines {
+  position: absolute; inset: 0; pointer-events: none;
+}
+.hero-line-top {
+  position: absolute; top: 100px; left: 0; right: 0;
+  height: 1px; background: linear-gradient(90deg, transparent, rgba(212,196,173,0.15) 20%, rgba(212,196,173,0.15) 80%, transparent);
+}
+.hero-line-bottom {
+  position: absolute; bottom: 100px; left: 0; right: 0;
+  height: 1px; background: linear-gradient(90deg, transparent, rgba(212,196,173,0.15) 20%, rgba(212,196,173,0.15) 80%, transparent);
+}
+.hero-line-left {
+  position: absolute; left: 48px; top: 120px; bottom: 120px;
+  width: 1px; background: linear-gradient(180deg, transparent, rgba(212,196,173,0.15) 20%, rgba(212,196,173,0.15) 80%, transparent);
+}
+.hero-line-right {
+  position: absolute; right: 48px; top: 120px; bottom: 120px;
+  width: 1px; background: linear-gradient(180deg, transparent, rgba(212,196,173,0.15) 20%, rgba(212,196,173,0.15) 80%, transparent);
+}
+
+.hero-content {
+  position: relative; z-index: 2; text-align: center;
+  padding: 20px 40px;
+  margin-top: -60px;
+  animation: heroReveal 1.2s cubic-bezier(0.16,1,0.3,1) both;
+}
+@keyframes heroReveal {
+  from { opacity: 0; transform: translateY(30px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.hero-eyebrow {
+  font-family: var(--fd); font-size: 22px; font-style: italic; font-weight: 400;
+  color: var(--gold); letter-spacing: 3px;
+  margin-bottom: 24px; display: block;
+}
+.hero-en-title {
+  font-family: 'Dancing Script', cursive; font-weight: 600; font-style: normal;
+  font-size: clamp(48px, 7vw, 96px);
+  color: var(--cream); line-height: 1.2; letter-spacing: 0px;
+  margin-bottom: 8px;
+}
+.hero-en-title em { color: var(--gold); font-style: normal; }
+.hero-ornament {
+  display: flex; align-items: center; justify-content: center; gap: 16px;
+  margin: 20px 0;
+}
+.orn-line { width: 80px; height: 1px; background: var(--gold-l); }
+.orn-diamond {
+  width: 6px; height: 6px; border: 1px solid var(--gold);
+  transform: rotate(45deg); flex-shrink: 0;
+}
+.hero-kr-title {
+  font-family: var(--fk); font-size: clamp(18px, 2.5vw, 26px);
+  font-weight: 300; color: var(--cream2);
+  letter-spacing: 4px; margin-bottom: 52px;
+}
+.hero-desc {
+  font-family: var(--fd); font-style: italic; font-weight: 300;
+  font-size: clamp(14px, 1.5vw, 18px); color: var(--ink-l);
+  line-height: 1.9; max-width: 700px; margin: 0 auto 72px;
+  white-space: nowrap;
+}
+.hero-meta-row {
+  display: flex; align-items: center; justify-content: center; gap: 32px;
+  flex-wrap: wrap; margin-bottom: 44px;
+}
+.hero-meta-item {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+}
+.hero-meta-label {
+  font-family: var(--fb); font-size: 9px; letter-spacing: 2px;
+  text-transform: uppercase; color: var(--ink-l); font-weight: 400;
+}
+.hero-meta-value {
+  font-family: var(--fk); font-size: 18px; color: var(--gold); font-weight: 400;
+}
+.hero-meta-sep { color: var(--ink-ll); font-size: 20px; }
+
+.hero-scroll-hint {
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+  color: var(--ink-l); cursor: pointer;
+  animation: float 2.5s ease-in-out infinite;
+}
+@keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(6px)} }
+.hs-text { font-family: var(--fd); font-style: italic; font-size: 28px; letter-spacing: 2px; }
+.hs-arrow { font-size: 28px; opacity: 0.6; }
+
+/* ── GALLERY SECTION ── */
+.gallery-sec {
+  padding: 100px 0 120px;
+  background: var(--cream);
+  position: relative;
+}
+
+/* top rule */
+.gallery-sec::before {
+  content: '';
+  position: absolute; top: 0; left: 48px; right: 48px;
+  height: 1px; background: var(--parchment);
+}
+
+.gallery-con { max-width: 1300px; margin: 0 auto; padding: 0 48px; }
+
+/* section header */
+.gallery-header {
+  display: grid; grid-template-columns: 1fr auto 1fr;
+  align-items: center; gap: 32px; margin-bottom: 56px;
+}
+.gallery-header-left { display: flex; flex-direction: column; gap: 4px; }
+.gh-label {
+  font-family: var(--fb); font-size: 9px; letter-spacing: 3px;
+  text-transform: uppercase; color: var(--ink-l);
+}
+.gh-count {
+  font-family: var(--fd); font-size: 28px; font-style: italic; font-weight: 300;
+  color: var(--gold);
+}
+.gallery-header-center { text-align: center; }
+.gh-en {
+  font-family: var(--fd); font-size: clamp(28px, 3.5vw, 42px);
+  font-style: italic; font-weight: 300; color: var(--charcoal);
+  line-height: 1; letter-spacing: -0.5px; margin-bottom: 6px;
+}
+.gh-kr {
+  font-family: var(--fk); font-size: 13px; font-weight: 300;
+  color: var(--ink-mid); letter-spacing: 3px;
+}
+.gallery-header-right {
+  display: flex; flex-direction: column; align-items: flex-end; gap: 4px;
+}
+.gh-filter-label {
+  font-family: var(--fb); font-size: 9px; letter-spacing: 3px;
+  text-transform: uppercase; color: var(--ink-l);
+}
+
+/* filter */
+.filter-row { display: flex; gap: 0; }
+.filter-btn {
+  font-family: 'EB Garamond', serif; font-size: 15px; font-style: italic;
+  color: var(--ink-mid); background: transparent;
+  border: 1px solid var(--ink-ll);
+  padding: 6px 20px; cursor: pointer;
+  transition: all 0.2s; margin-left: -1px;
+  letter-spacing: 0.5px;
+}
+.filter-btn:first-child { margin-left: 0; }
+.filter-btn:hover { color: var(--gold); border-color: var(--gold-l); z-index: 1; }
+.filter-btn.active {
+  background: var(--charcoal); color: var(--cream); border-color: var(--charcoal); z-index: 2;
+}
+
+/* masonry-style grid */
+.work-grid {
+  columns: 3; column-gap: 28px;
+}
+@media (max-width: 1100px) { .work-grid { columns: 2; } }
+@media (max-width: 680px)  { .work-grid { columns: 1; } }
+
+/* work card — gallery frame style */
+.work-card {
+  break-inside: avoid;
+  margin-bottom: 28px;
+  background: var(--white);
+  border: 1px solid var(--ink-ll);
+  position: relative;
+  transition: transform 0.3s cubic-bezier(.16,1,.3,1), box-shadow 0.3s;
+  cursor: pointer;
+  animation: cardReveal 0.6s ease both;
+}
+.work-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 20px 60px rgba(44,40,32,0.14);
+}
+@keyframes cardReveal {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* frame inner mat effect */
+.work-card-mat {
+  padding: 12px; border: 1px solid var(--parchment); margin: 10px;
+  position: relative;
+}
+
+/* grade accent — top fine line */
+.work-card-accent {
+  position: absolute; top: 0; left: 0; right: 0; height: 2px;
+}
+.acc-1 { background: linear-gradient(90deg, var(--rose), var(--gold)); }
+.acc-2 { background: linear-gradient(90deg, #7B9E8C, #A8C4B4); }
+.acc-3 { background: linear-gradient(90deg, var(--gold), #D4AA6A); }
+
+.work-thumb {
+  width: 100%; aspect-ratio: 4/3;
+  background: linear-gradient(135deg, var(--cream2), var(--parchment));
+  overflow: hidden; display: flex; align-items: center; justify-content: center;
+  position: relative;
+}
+.work-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.work-thumb-ph {
+  display: flex; flex-direction: column; align-items: center; gap: 10px;
+  opacity: 0.35;
+}
+.wt-en { font-family: var(--fd); font-style: italic; font-size: 11px; color: var(--ink-mid); letter-spacing: 2px; }
+
+/* grade badge */
+.work-grade-pill {
+  display: inline-block; font-family: var(--fb); font-size: 9px;
+  letter-spacing: 2px; text-transform: uppercase; font-weight: 500;
+  padding: 3px 10px; margin-bottom: 10px; margin-top: 14px;
+}
+.gp-1 { background: rgba(196,136,122,0.1); color: var(--rose); border: 1px solid rgba(196,136,122,0.25); }
+.gp-2 { background: rgba(123,158,140,0.1); color: #5C8C74; border: 1px solid rgba(123,158,140,0.25); }
+.gp-3 { background: rgba(184,150,90,0.1); color: var(--gold); border: 1px solid rgba(184,150,90,0.25); }
+
+.work-body { padding: 0 14px 16px; }
+.work-title {
+  font-family: var(--fk); font-size: 16px; font-weight: 500;
+  color: var(--charcoal); margin-bottom: 5px; line-height: 1.4;
+}
+.work-author {
+  font-family: var(--fd); font-size: 13px; font-style: italic; font-weight: 300;
+  color: var(--ink-l); margin-bottom: 12px; letter-spacing: 0.3px;
+}
+
+/* question block */
+.work-q {
+  border-top: 1px solid var(--parchment); padding-top: 10px; margin-bottom: 12px;
+}
+.wq-en {
+  font-family: var(--fd); font-style: italic; font-size: 10px;
+  color: var(--gold); letter-spacing: 1.5px; margin-bottom: 5px;
+}
+.wq-text {
+  font-family: var(--fk); font-size: 12px; color: var(--ink-mid);
+  line-height: 1.7; font-weight: 300;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+
+/* career tags */
+.work-careers { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
+.career-tag {
+  font-family: var(--fd); font-size: 12px; font-style: italic;
+  color: var(--ink-mid); border: 1px solid var(--ink-ll);
+  padding: 3px 10px; background: var(--cream);
+}
+
+/* card footer */
+.work-footer {
+  border-top: 1px solid var(--parchment); padding: 10px 14px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.like-btn {
+  display: flex; align-items: center; gap: 6px;
+  font-family: var(--fd); font-size: 13px; font-style: italic;
+  color: var(--ink-l); background: none; border: none;
+  cursor: pointer; transition: color 0.2s; padding: 0;
+}
+.like-btn:hover, .like-btn.liked { color: var(--rose); }
+.detail-btn {
+  font-family: var(--fd); font-style: italic; font-size: 13px;
+  color: var(--gold); background: none; border: none; border-bottom: 1px solid var(--gold-l);
+  cursor: pointer; padding: 0 0 1px; transition: color 0.2s; letter-spacing: 0.3px;
+}
+.detail-btn:hover { color: var(--charcoal); border-color: var(--charcoal); }
+
+/* card footer action group */
+.work-footer-right { display: flex; align-items: center; gap: 12px; }
+.edit-btn {
+  font-family: var(--fb); font-size: 10px; letter-spacing: 1.5px;
+  text-transform: uppercase; font-weight: 500;
+  color: var(--ink-l); background: none;
+  border: 1px solid var(--ink-ll);
+  padding: 4px 12px; cursor: pointer;
+  transition: all 0.2s;
+}
+.edit-btn:hover { color: var(--charcoal); border-color: var(--ink-mid); background: var(--cream2); }
+
+/* ── EDIT MODAL ── */
+.edit-bd {
+  display: none; position: fixed; inset: 0; z-index: 400;
+  background: rgba(44,40,32,0.8); backdrop-filter: blur(12px);
+  align-items: center; justify-content: center; padding: 24px;
+}
+.edit-bd.open { display: flex; }
+.edit-modal {
+  background: var(--charcoal); width: 100%; max-width: 680px;
+  max-height: 92vh; overflow-y: auto;
+  animation: modalIn 0.3s cubic-bezier(.16,1,.3,1);
+  border-top: 2px solid var(--gold);
+}
+.edit-modal-header {
+  padding: 28px 36px 0;
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 28px;
+}
+.edit-modal-title {
+  font-family: var(--fd); font-style: italic; font-weight: 300;
+  font-size: 26px; color: var(--cream); letter-spacing: -0.3px;
+}
+.edit-modal-title em { color: var(--gold); }
+.edit-modal-close {
+  background: rgba(247,243,236,0.08); border: 1px solid rgba(212,196,173,0.2);
+  width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;
+  cursor: pointer; font-size: 14px; color: var(--ink-l); transition: all 0.2s; flex-shrink: 0;
+}
+.edit-modal-close:hover { background: rgba(196,136,122,0.15); color: var(--rose); border-color: var(--rose); }
+.edit-modal-body { padding: 0 36px 36px; }
+
+/* edit drop zone (reuse dz styles but for edit modal) */
+.edit-dz {
+  border: 1px dashed rgba(184,150,90,0.35); padding: 24px;
+  text-align: center; cursor: pointer; position: relative;
+  transition: all 0.2s; margin-bottom: 10px;
+  background: rgba(184,150,90,0.03);
+}
+.edit-dz:hover, .edit-dz.drag-over {
+  border-color: var(--gold); background: rgba(184,150,90,0.07);
+}
+.edit-dz-input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+.edit-current-img {
+  width: 100%; max-height: 180px; object-fit: cover;
+  border: 1px solid rgba(212,196,173,0.15); margin-bottom: 10px; display: block;
+}
+.edit-img-label {
+  font-family: var(--fd); font-style: italic; font-size: 11px;
+  color: var(--ink-l); letter-spacing: 1px; margin-bottom: 6px; display: block;
+}
+.edit-img-clear {
+  font-family: var(--fd); font-style: italic; font-size: 11px;
+  color: var(--rose); background: none; border: none; border-bottom: 1px solid rgba(196,136,122,0.4);
+  cursor: pointer; padding: 0; margin-top: 6px;
+}
+.edit-img-clear:hover { color: #E0A090; }
+
+/* save / delete row */
+.edit-actions {
+  display: flex; gap: 12px; margin-top: 28px;
+  padding-top: 20px; border-top: 1px solid rgba(212,196,173,0.12);
+}
+.edit-save-btn {
+  flex: 1; padding: 14px; background: var(--gold);
+  color: var(--charcoal); font-family: var(--fk); font-size: 13px; font-weight: 500;
+  border: none; cursor: pointer; letter-spacing: 2px; text-transform: uppercase; transition: all 0.22s;
+}
+.edit-save-btn:hover { background: var(--gold-l); }
+.edit-delete-btn {
+  padding: 14px 22px; background: transparent;
+  color: rgba(196,136,122,0.7); font-family: var(--fk); font-size: 13px; font-weight: 400;
+  border: 1px solid rgba(196,136,122,0.25); cursor: pointer;
+  letter-spacing: 1px; text-transform: uppercase; transition: all 0.22s;
+}
+.edit-delete-btn:hover { background: rgba(196,136,122,0.1); color: var(--rose); border-color: var(--rose); }
+
+/* empty state */
+.empty-state {
+  column-span: all;
+  text-align: center; padding: 100px 40px;
+  border: 1px dashed var(--ink-ll);
+}
+.es-en {
+  font-family: var(--fd); font-style: italic; font-size: 28px; font-weight: 300;
+  color: var(--ink-ll); margin-bottom: 12px;
+}
+.es-kr { font-family: var(--fk); font-size: 13px; color: var(--ink-l); font-weight: 300; line-height: 1.8; }
+
+/* ── UPLOAD SECTION ── */
+.upload-sec {
+  padding: 100px 0 120px;
+  background: var(--charcoal);
+  position: relative; overflow: hidden;
+}
+.upload-sec::before {
+  content: '';
+  position: absolute; width: 600px; height: 600px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(184,150,90,0.06) 0%, transparent 70%);
+  top: -100px; right: -100px; pointer-events: none;
+}
+
+.upload-con { max-width: 1300px; margin: 0 auto; padding: 0 48px; }
+.upload-header { text-align: center; margin-bottom: 60px; }
+.uh-en {
+  font-family: var(--fd); font-style: italic; font-weight: 300;
+  font-size: clamp(32px, 4vw, 52px); color: var(--cream);
+  letter-spacing: -0.5px; margin-bottom: 8px;
+}
+.uh-en em { color: var(--gold); }
+.uh-kr { font-family: var(--fk); font-size: 13px; font-weight: 300; color: var(--ink-l); letter-spacing: 3px; }
+
+.upload-layout { display: grid; grid-template-columns: 1fr 380px; gap: 48px; }
+
+/* form */
+.upload-form-wrap { }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.form-group { margin-bottom: 20px; }
+.form-label {
+  display: block; font-family: var(--fd); font-style: italic; font-size: 13px;
+  color: var(--gold-l); letter-spacing: 0.5px; margin-bottom: 7px;
+}
+.form-input, .form-select, .form-textarea {
+  width: 100%; padding: 11px 14px; font-family: var(--fk); font-size: 13px;
+  background: rgba(247,243,236,0.06); border: 1px solid rgba(212,196,173,0.2);
+  color: var(--cream); outline: none; transition: border-color 0.2s; font-weight: 300;
+}
+.form-input::placeholder, .form-textarea::placeholder { color: rgba(212,196,173,0.3); }
+.form-input:focus, .form-select:focus, .form-textarea:focus {
+  border-color: var(--gold); background: rgba(247,243,236,0.09);
+}
+.form-select option { background: var(--charcoal); color: var(--cream); }
+.form-textarea { min-height: 80px; resize: vertical; }
+
+/* drop zone */
+.drop-zone {
+  border: 1px dashed rgba(184,150,90,0.35); padding: 36px 24px;
+  text-align: center; cursor: pointer; position: relative;
+  transition: all 0.2s; margin-bottom: 14px;
+  background: rgba(184,150,90,0.03);
+}
+.drop-zone:hover, .drop-zone.drag-over {
+  border-color: var(--gold); background: rgba(184,150,90,0.07);
+}
+.dz-icon { font-size: 26px; margin-bottom: 8px; opacity: 0.55; }
+.dz-txt {
+  font-family: var(--fd); font-style: italic; font-size: 15px;
+  color: var(--cream); margin-bottom: 4px;
+}
+.dz-sub { font-family: var(--fb); font-size: 10px; color: var(--ink-l); letter-spacing: 1px; }
+.dz-input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+.dz-preview { display: none; }
+.dz-preview.show { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.dz-thumb {
+  width: 72px; height: 72px; overflow: hidden;
+  border: 1px solid rgba(184,150,90,0.25); position: relative;
+}
+.dz-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.dz-thumb-del {
+  position: absolute; top: 2px; right: 2px; width: 15px; height: 15px;
+  background: rgba(44,40,32,0.75); border-radius: 50%; font-size: 8px;
+  color: white; display: flex; align-items: center; justify-content: center;
+  cursor: pointer; border: none;
+}
+
+.submit-btn {
+  width: 100%; padding: 15px; background: var(--gold);
+  color: var(--charcoal); font-family: var(--fk); font-size: 13px; font-weight: 500;
+  border: none; cursor: pointer; letter-spacing: 2px; text-transform: uppercase;
+  transition: all 0.25s;
+}
+.submit-btn:hover { background: var(--gold-l); }
+
+/* side info */
+.upload-info { display: flex; flex-direction: column; gap: 28px; }
+.info-block { border-top: 1px solid rgba(212,196,173,0.15); padding-top: 24px; }
+.ib-title {
+  font-family: var(--fd); font-style: italic; font-size: 18px; font-weight: 300;
+  color: var(--gold-l); margin-bottom: 14px;
+}
+.ib-step { display: flex; gap: 12px; margin-bottom: 12px; align-items: flex-start; }
+.ib-num {
+  font-family: var(--fd); font-style: italic; font-size: 16px; font-weight: 300;
+  color: var(--gold); flex-shrink: 0; width: 20px; line-height: 1;
+}
+.ib-txt { font-family: var(--fk); font-size: 12px; color: var(--ink-l); line-height: 1.7; font-weight: 300; }
+
+.crit-block { }
+.crit-item-up { padding: 10px 0; border-bottom: 1px solid rgba(212,196,173,0.1); display: flex; gap: 12px; align-items: center; }
+.crit-item-up:last-child { border-bottom: none; }
+.ci-letter {
+  font-family: var(--fd); font-style: italic; font-size: 22px; font-weight: 300;
+  color: var(--gold); width: 24px; flex-shrink: 0;
+}
+.ci-right { flex: 1; }
+.ci-name { font-family: var(--fk); font-size: 12px; color: var(--cream); font-weight: 400; margin-bottom: 1px; }
+.ci-score { font-family: var(--fd); font-style: italic; font-size: 11px; color: var(--ink-l); }
+
+.warn-block {
+  border: 1px solid rgba(196,136,122,0.25); padding: 16px 18px;
+  background: rgba(196,136,122,0.04);
+}
+.wb-txt { font-family: var(--fk); font-size: 11px; color: rgba(196,136,122,0.8); line-height: 1.8; font-weight: 300; }
+.wb-txt strong { color: var(--rose); }
+
+/* ── MODAL ── */
+.modal-bd {
+  display: none; position: fixed; inset: 0; z-index: 300;
+  background: rgba(44,40,32,0.75); backdrop-filter: blur(10px);
+  align-items: center; justify-content: center; padding: 24px;
+}
+.modal-bd.open { display: flex; }
+.modal {
+  background: var(--white); width: 100%; max-width: 760px;
+  max-height: 92vh; overflow-y: auto;
+  animation: modalIn 0.3s cubic-bezier(.16,1,.3,1);
+}
+@keyframes modalIn { from{opacity:0;transform:scale(0.94)} to{opacity:1;transform:scale(1)} }
+
+.modal-accent { height: 2px; }
+.ma-1 { background: linear-gradient(90deg, var(--rose), var(--gold)); }
+.ma-2 { background: linear-gradient(90deg, #7B9E8C, #A8C4B4); }
+.ma-3 { background: linear-gradient(90deg, var(--gold), #D4AA6A); }
+
+.modal-header-inner {
+  padding: 32px 40px 0;
+  display: flex; justify-content: space-between; align-items: flex-start;
+}
+.mh-left { }
+.m-grade-pill {
+  font-family: var(--fb); font-size: 9px; letter-spacing: 2.5px;
+  text-transform: uppercase; font-weight: 500; display: inline-block;
+  padding: 3px 12px; margin-bottom: 10px;
+}
+.mp-1 { background: rgba(196,136,122,0.1); color: var(--rose); border: 1px solid rgba(196,136,122,0.25); }
+.mp-2 { background: rgba(123,158,140,0.1); color: #5C8C74; border: 1px solid rgba(123,158,140,0.25); }
+.mp-3 { background: rgba(184,150,90,0.1); color: var(--gold); border: 1px solid rgba(184,150,90,0.25); }
+.m-title { font-family: var(--fk); font-size: 24px; font-weight: 500; color: var(--charcoal); margin-bottom: 5px; }
+.m-author { font-family: var(--fd); font-style: italic; font-size: 15px; color: var(--ink-l); font-weight: 300; }
+.modal-close {
+  background: var(--cream2); border: 1px solid var(--ink-ll); width: 36px; height: 36px;
+  display: flex; align-items: center; justify-content: center; cursor: pointer;
+  font-size: 14px; color: var(--ink-mid); transition: all 0.2s; flex-shrink: 0;
+}
+.modal-close:hover { background: var(--charcoal); color: var(--cream); border-color: var(--charcoal); }
+
+.m-img {
+  width: 100%; object-fit: cover; max-height: 420px; display: block;
+  margin-top: 24px; background: var(--cream2);
+  cursor: zoom-in; transition: opacity 0.15s;
+}
+.m-img:hover { opacity: 0.92; }
+
+/* ── LIGHTBOX ── */
+.lightbox {
+  display: none; position: fixed; inset: 0; z-index: 600;
+  background: rgba(20,16,12,0.96);
+  align-items: center; justify-content: center;
+  cursor: zoom-out;
+  animation: lbIn 0.22s ease;
+}
+.lightbox.open { display: flex; }
+@keyframes lbIn { from{opacity:0} to{opacity:1} }
+
+.lb-inner {
+  position: relative; max-width: 96vw; max-height: 94vh;
+  display: flex; align-items: center; justify-content: center;
+}
+.lb-img {
+  max-width: 96vw; max-height: 90vh;
+  object-fit: contain;
+  display: block;
+  animation: lbImgIn 0.28s cubic-bezier(.16,1,.3,1);
+  box-shadow: 0 40px 100px rgba(0,0,0,0.6);
+}
+@keyframes lbImgIn {
+  from { opacity:0; transform: scale(0.92); }
+  to   { opacity:1; transform: scale(1); }
+}
+
+.lb-close {
+  position: fixed; top: 24px; right: 28px;
+  background: rgba(247,243,236,0.08); border: 1px solid rgba(212,196,173,0.2);
+  color: var(--cream); font-size: 18px; width: 44px; height: 44px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: all 0.2s; z-index: 10;
+}
+.lb-close:hover { background: rgba(184,150,90,0.2); border-color: var(--gold); color: var(--gold); }
+
+.lb-caption {
+  position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%);
+  font-family: var(--fd); font-style: italic; font-size: 13px;
+  color: rgba(212,196,173,0.6); letter-spacing: 1px; white-space: nowrap;
+  pointer-events: none;
+}
+
+.lb-hint {
+  position: fixed; bottom: 28px; right: 36px;
+  font-family: var(--fb); font-size: 10px; letter-spacing: 1.5px;
+  text-transform: uppercase; color: rgba(212,196,173,0.3);
+  pointer-events: none;
+}
+.modal-body { padding: 28px 40px 40px; }
+.m-section { margin-bottom: 24px; }
+.m-section-en {
+  font-family: var(--fd); font-style: italic; font-size: 11px; font-weight: 300;
+  color: var(--gold); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 8px;
+}
+.m-rule { width: 40px; height: 1px; background: var(--gold-l); margin-bottom: 10px; }
+.m-section-text { font-family: var(--fk); font-size: 14px; color: var(--ink); line-height: 1.85; font-weight: 300; }
+.m-careers { display: flex; gap: 10px; flex-wrap: wrap; }
+.m-career {
+  font-family: var(--fd); font-style: italic; font-size: 15px; font-weight: 300;
+  color: var(--ink-mid); border-bottom: 1px solid var(--gold-l); padding-bottom: 2px;
+}
+
+/* ── TOAST ── */
+.toast {
+  position: fixed; bottom: 32px; left: 50%;
+  transform: translateX(-50%) translateY(80px);
+  background: var(--charcoal); color: var(--cream);
+  font-family: var(--fd); font-style: italic; font-size: 14px;
+  padding: 12px 28px; z-index: 400;
+  border-bottom: 2px solid var(--gold);
+  transition: transform 0.38s cubic-bezier(.34,1.56,.64,1), opacity 0.38s;
+  opacity: 0; white-space: nowrap;
+}
+.toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+/* ── FOOTER ── */
+footer {
+  background: var(--charcoal); padding: 72px 0;
+  border-top: 1px solid rgba(212,196,173,0.1);
+}
+.foot-in {
+  max-width: 1300px; margin: 0 auto; padding: 0 48px;
+  display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 32px;
+}
+.foot-logo-en {
+  font-family: 'Dancing Script', cursive; font-size: 42px; font-weight: 600;
+  color: var(--gold); letter-spacing: 0.5px; line-height: 1.15;
+}
+.foot-logo-kr {
+  font-family: var(--fk); font-size: 20px; color: var(--ink-l);
+  font-weight: 300; letter-spacing: 3px; margin-top: 10px;
+}
+.foot-orn { text-align: center; }
+.foot-diamond {
+  width: 8px; height: 8px; border: 1px solid var(--gold);
+  transform: rotate(45deg); display: inline-block; opacity: 0.5;
+}
+.foot-info {
+  text-align: right; font-family: var(--fk); font-size: 11px;
+  color: var(--ink-l); font-weight: 300; line-height: 1.9;
+}
+
+.hero-btn-row {
+  display: flex; align-items: center; justify-content: center; gap: 40px;
+  flex-wrap: wrap;
+}
+.award-goto-btn {
+  font-family: var(--fk); font-size: 15px; font-weight: 500;
+  color: var(--charcoal); background: var(--gold);
+  border: 2px solid var(--gold); border-radius: 12px;
+  padding: 12px 28px; cursor: pointer;
+  letter-spacing: 1px; transition: all 0.22s;
+  animation: none;
+}
+.award-goto-btn:hover {
+  background: var(--gold-l); border-color: var(--gold-l);
+}
+.hero-btn-row {
+  display: flex; align-items: center; justify-content: center; gap: 24px;
+  flex-wrap: wrap;
+}
+.award-scroll-btn {
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+  color: var(--gold); cursor: pointer;
+  animation: float 2.5s ease-in-out infinite;
+  animation-delay: 0.15s;
+  border: none; background: none; padding: 0;
+}
+.award-scroll-btn .hs-text { color: var(--gold); }
+.award-scroll-btn .hs-arrow { color: var(--gold); }
+
+/* ── 수상작 섹션 ── */
+.award-sec {
+  padding: 80px 0 100px;
+  background: var(--charcoal);
+  position: relative; overflow: hidden;
+}
+.award-sec::before {
+  content: '';
+  position: absolute; width: 600px; height: 600px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(184,150,90,0.08) 0%, transparent 70%);
+  top: -100px; left: -100px; pointer-events: none;
+}
+.award-con { max-width: 1300px; margin: 0 auto; padding: 0 48px; }
+.award-header { text-align: center; margin-bottom: 56px; }
+.award-header-en {
+  font-family: var(--fd); font-style: italic; font-weight: 300;
+  font-size: clamp(28px, 3.5vw, 44px); color: var(--cream);
+  letter-spacing: -0.5px; margin-bottom: 8px;
+}
+.award-header-en em { color: var(--gold); }
+.award-header-kr {
+  font-family: var(--fk); font-size: 13px; font-weight: 300;
+  color: var(--ink-l); letter-spacing: 3px;
+}
+
+/* 수상 배지 선택 */
+.award-picker {
+  display: flex; gap: 10px; flex-wrap: wrap;
+}
+.award-pick-btn {
+  flex: 1; min-width: 80px; padding: 12px 8px; border-radius: 0;
+  border: 1px solid rgba(212,196,173,0.2);
+  background: rgba(247,243,236,0.04);
+  color: var(--cream); font-family: var(--fk); font-size: 12px;
+  cursor: pointer; transition: all 0.2s; text-align: center;
+}
+.award-pick-btn:hover { border-color: var(--gold); }
+.award-pick-btn.selected { background: var(--gold); border-color: var(--gold); color: var(--charcoal); font-weight: 700; }
+.apb-icon { font-size: 22px; display: block; margin-bottom: 4px; }
+.apb-none { font-size: 12px; opacity: 0.5; }
+
+/* 수상 배지 on card */
+.award-badge {
+  position: absolute; top: 10px; right: 10px;
+  width: 44px; height: 44px; border-radius: 50%;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  font-size: 20px; box-shadow: 0 4px 14px rgba(0,0,0,0.25);
+  border: 2px solid rgba(255,255,255,0.6);
+  z-index: 2;
+}
+.ab-gold   { background: linear-gradient(135deg,#FFD700,#FFA500); }
+.ab-silver { background: linear-gradient(135deg,#E8E8E8,#C0C0C0); }
+.ab-bronze { background: linear-gradient(135deg,#CD7F32,#A0522D); }
+
+/* 수상작 갤러리 그리드 */
+.award-grid {
+  columns: 3; column-gap: 28px;
+}
+@media (max-width: 1100px) { .award-grid { columns: 2; } }
+@media (max-width: 680px)  { .award-grid { columns: 1; } }
+
+/* award empty */
+.award-empty {
+  text-align: center; padding: 80px 40px;
+  border: 1px dashed rgba(212,196,173,0.2);
+}
+.ae-en {
+  font-family: var(--fd); font-style: italic; font-size: 24px; font-weight: 300;
+  color: rgba(212,196,173,0.3); margin-bottom: 10px;
+}
+.ae-kr { font-family: var(--fk); font-size: 12px; color: rgba(212,196,173,0.3); }
+
+/* award card (dark theme) */
+.award-card {
+  break-inside: avoid; margin-bottom: 28px;
+  background: rgba(247,243,236,0.05);
+  border: 1px solid rgba(212,196,173,0.15);
+  position: relative; transition: all 0.25s; cursor: pointer;
+  animation: cardReveal 0.6s ease both;
+}
+.award-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+  border-color: rgba(184,150,90,0.4);
+}
+.award-card-mat {
+  padding: 10px; border: 1px solid rgba(212,196,173,0.1); margin: 10px;
+}
+.award-thumb {
+  width: 100%; aspect-ratio: 4/3;
+  background: rgba(247,243,236,0.04);
+  overflow: hidden; display: flex; align-items: center; justify-content: center;
+}
+.award-thumb img { width:100%; height:100%; object-fit:cover; }
+.award-thumb-ph {
+  display: flex; flex-direction: column; align-items: center; gap: 8px; opacity: 0.25;
+}
+.award-body { padding: 0 14px 14px; }
+.award-title {
+  font-family: var(--fk); font-size: 15px; font-weight: 500;
+  color: var(--cream); margin-bottom: 4px;
+}
+.award-author {
+  font-family: var(--fd); font-style: italic; font-size: 12px;
+  color: var(--ink-l); margin-bottom: 10px;
+}
+.award-q {
+  border-top: 1px solid rgba(212,196,173,0.1); padding-top: 8px; margin-bottom: 10px;
+}
+.aq-label {
+  font-family: var(--fd); font-style: italic; font-size: 9px;
+  color: var(--gold); letter-spacing: 1.5px; margin-bottom: 4px;
+}
+.aq-text {
+  font-family: var(--fk); font-size: 11px; color: var(--ink-l);
+  line-height: 1.6; font-weight: 300;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+.award-footer {
+  border-top: 1px solid rgba(212,196,173,0.1); padding: 8px 14px 12px;
+  display: flex; justify-content: flex-end;
+}
+.award-detail-btn {
+  font-family: var(--fd); font-style: italic; font-size: 12px;
+  color: var(--gold-l); background: none; border: none;
+  border-bottom: 1px solid rgba(212,196,173,0.3);
+  cursor: pointer; padding: 0 0 1px; transition: color 0.2s;
+}
+.award-detail-btn:hover { color: var(--gold); }
+
+/* award upload form */
+.award-form-wrap { margin-top: 60px; border-top: 1px solid rgba(212,196,173,0.12); padding-top: 48px; }
+.award-form-title {
+  font-family: var(--fd); font-style: italic; font-weight: 300;
+  font-size: 26px; color: var(--cream); margin-bottom: 28px;
+}
+.award-form-title em { color: var(--gold); }
+.award-layout { display: grid; grid-template-columns: 1fr 340px; gap: 32px; }
+@media (max-width: 900px) { .award-layout { grid-template-columns: 1fr; } }
+
+/* award modal (dark) */
+.award-modal-bd {
+  display: none; position: fixed; inset: 0; z-index: 300;
+  background: rgba(20,16,12,0.9); backdrop-filter: blur(10px);
+  align-items: center; justify-content: center; padding: 24px;
+}
+.award-modal-bd.open { display: flex; }
+.award-modal {
+  background: var(--charcoal); width: 100%; max-width: 720px;
+  max-height: 92vh; overflow-y: auto; border-top: 2px solid var(--gold);
+  animation: modalIn 0.3s cubic-bezier(.16,1,.3,1);
+}
+.am-header {
+  padding: 28px 36px 0; display: flex; justify-content: space-between; align-items: flex-start;
+  margin-bottom: 0;
+}
+.am-badge-row { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+.am-badge { font-size: 28px; }
+.am-award-name {
+  font-family: var(--fd); font-style: italic; font-size: 14px;
+  color: var(--gold); letter-spacing: 1px;
+}
+.am-title { font-family: var(--fk); font-size: 22px; font-weight: 500; color: var(--cream); margin-bottom: 4px; }
+.am-author { font-family: var(--fd); font-style: italic; font-size: 14px; color: var(--ink-l); }
+.am-close {
+  background: rgba(247,243,236,0.08); border: 1px solid rgba(212,196,173,0.2);
+  width: 34px; height: 34px; display: flex; align-items: center; justify-content: center;
+  cursor: pointer; font-size: 14px; color: var(--ink-l); flex-shrink: 0; transition: all 0.2s;
+}
+.am-close:hover { background: rgba(196,136,122,0.2); color: var(--rose); }
+.am-img { width: 100%; object-fit: cover; max-height: 420px; display: block; margin-top: 20px; cursor: zoom-in; }
+.am-body { padding: 24px 36px 36px; }
+.am-section { margin-bottom: 20px; }
+.am-section-label {
+  font-family: var(--fd); font-style: italic; font-size: 10px;
+  color: var(--gold); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 6px;
+}
+.am-rule { width: 36px; height: 1px; background: var(--gold-l); margin-bottom: 8px; }
+.am-text { font-family: var(--fk); font-size: 13px; color: var(--ink-l); line-height: 1.8; font-weight: 300; }
+.am-careers { display: flex; gap: 8px; flex-wrap: wrap; }
+.am-career {
+  font-family: var(--fd); font-style: italic; font-size: 14px; font-weight: 300;
+  color: var(--ink-l); border-bottom: 1px solid rgba(184,150,90,0.35); padding-bottom: 1px;
+}
+@media (max-width: 900px) {
+  .hero-bg-text { font-size: 80px; }
+  .gallery-header { grid-template-columns: 1fr; gap: 16px; }
+  .gallery-header-left, .gallery-header-right { display: none; }
+  .gallery-header-center { text-align: left; }
+  .upload-layout { grid-template-columns: 1fr; }
+  .form-row { grid-template-columns: 1fr; }
+  .foot-in { grid-template-columns: 1fr; text-align: center; }
+  .foot-orn { display: none; }
+  .foot-info { text-align: center; }
+  .nav-links { display: none; }
+  .nav-rule { display: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-in">
+    <div class="nav-logo-block">
+      <span class="nav-logo-en">Question-based Career Design</span>
+      <span class="nav-logo-kr">질문기반 진로설계 공모전 전시회</span>
+    </div>
+    <div class="nav-rule"></div>
+    <ul class="nav-links">
+      <li><a href="#gallery" onclick="event.preventDefault();document.getElementById('gallery').scrollIntoView({behavior:'smooth'})">Exhibition</a></li>
+    </ul>
+    <a href="#upload" class="nav-upload-btn">작품 등록</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="home">
+  <div class="hero-bg-text">Career</div>
+  <div class="hero-lines">
+    <div class="hero-line-top"></div>
+    <div class="hero-line-bottom"></div>
+    <div class="hero-line-left"></div>
+    <div class="hero-line-right"></div>
+  </div>
+  <div class="hero-content">
+    <span class="hero-eyebrow">2026 Annual Exhibition</span>
+    <h1 class="hero-en-title">Question-based<br><em>Career Design</em></h1>
+    <div class="hero-ornament">
+      <div class="orn-line"></div>
+      <div class="orn-diamond"></div>
+      <div class="orn-line"></div>
+    </div>
+    <p class="hero-kr-title">질문기반 진로설계 공모전 전시회</p>
+    <p class="hero-desc">
+      "스스로 던진 질문 하나가 진로의 방향을 바꾼다"
+    </p>
+    <div class="hero-meta-row">
+      <div class="hero-meta-item">
+        <span class="hero-meta-label">Evaluation Criteria</span>
+        <span class="hero-meta-value">질문 탐구성 40 · 구체성 30 · 창의성 30</span>
+      </div>
+      <span class="hero-meta-sep">·</span>
+      <div class="hero-meta-item">
+        <span class="hero-meta-label">Works</span>
+        <span class="hero-meta-value" id="hero-count">0점</span>
+      </div>
+    </div>
+    <div class="hero-btn-row">
+      <button class="award-goto-btn" onclick="document.getElementById('awards').scrollIntoView({behavior:'smooth'})">
+        수상작 보기
+      </button>
+      <div class="hero-scroll-hint" onclick="document.getElementById('gallery').scrollIntoView({behavior:'smooth'})">
+        <span class="hs-text">View Exhibition</span>
+        <span class="hs-arrow">↓</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- GALLERY -->
+<section class="gallery-sec" id="gallery">
+  <div class="gallery-con">
+    <div class="gallery-header">
+      <div class="gallery-header-left">
+        <span class="gh-label">Total Works</span>
+        <span class="gh-count" id="gallery-count">0</span>
+      </div>
+      <div class="gallery-header-center">
+        <div class="gh-en">Works on Exhibition</div>
+        <div class="gh-kr">전시 작품</div>
+      </div>
+      <div class="gallery-header-right">
+        <span class="gh-filter-label">Filter by Grade</span>
+        <div class="filter-row">
+          <button class="filter-btn active" onclick="filterWorks('all',this)">All</button>
+          <button class="filter-btn" onclick="filterWorks('1',this)">1학년</button>
+          <button class="filter-btn" onclick="filterWorks('2',this)">2학년</button>
+          <button class="filter-btn" onclick="filterWorks('3',this)">3학년</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="gallery-loading" style="
+      display:block; text-align:center; padding:80px 20px;
+      font-family:var(--fd); font-style:italic; font-size:16px;
+      color:var(--ink-l); letter-spacing:2px;
+    ">작품을 불러오는 중…</div>
+    <div class="work-grid" id="work-grid"></div>
+  </div>
+</section>
+
+<!-- AWARDS -->
+<section class="award-sec" id="awards">
+  <div class="award-con">
+    <div class="award-header">
+      <div class="award-header-en"><em>Award</em> Winners</div>
+      <div class="award-header-kr">수상작 전시</div>
+    </div>
+    <div class="award-grid" id="award-grid">
+      <div class="award-empty">
+        <div class="ae-en">No awards yet</div>
+        <div class="ae-kr">수상작이 아직 등록되지 않았습니다.</div>
+      </div>
+    </div>
+
+    <!-- 수상작 등록 폼 -->
+    <div class="award-form-wrap">
+      <div class="award-form-title">수상작 <em>등록하기</em></div>
+      <div class="award-layout">
+        <div>
+          <div class="form-group">
+            <label class="form-label">수상 등급 선택 *</label>
+            <div class="award-picker" id="award-picker">
+              <button class="award-pick-btn" data-award="" data-icon="" onclick="selectAward(this)">
+                <span class="apb-icon apb-none">—</span>없음
+              </button>
+              <button class="award-pick-btn" data-award="최우수상" data-icon="🥇" onclick="selectAward(this)">
+                <span class="apb-icon">🥇</span>최우수상
+              </button>
+              <button class="award-pick-btn" data-award="우수상" data-icon="🥈" onclick="selectAward(this)">
+                <span class="apb-icon">🥈</span>우수상
+              </button>
+              <button class="award-pick-btn" data-award="장려상" data-icon="🥉" onclick="selectAward(this)">
+                <span class="apb-icon">🥉</span>장려상
+              </button>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">학번</label>
+              <input class="form-input" type="text" id="aw-sid" placeholder="20341">
+            </div>
+            <div class="form-group">
+              <label class="form-label">이름 *</label>
+              <input class="form-input" type="text" id="aw-name" placeholder="홍길동">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">학년 *</label>
+              <select class="form-select" id="aw-grade">
+                <option value="">선택</option>
+                <option value="1">1학년</option>
+                <option value="2">2학년</option>
+                <option value="3">3학년</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">반 *</label>
+              <select class="form-select" id="aw-class">
+                <option value="">선택</option>
+                <option>1반</option><option>2반</option><option>3반</option>
+                <option>4반</option><option>5반</option><option>6반</option>
+                <option>7반</option><option>8반</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">작품 제목 *</label>
+            <input class="form-input" type="text" id="aw-title" placeholder="작품 제목">
+          </div>
+          <div class="form-group">
+            <label class="form-label">핵심 질문</label>
+            <textarea class="form-textarea" id="aw-question" placeholder="핵심 질문"></textarea>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">희망 직업</label>
+              <input class="form-input" type="text" id="aw-job" placeholder="희망 직업">
+            </div>
+            <div class="form-group">
+              <label class="form-label">희망 학과</label>
+              <input class="form-input" type="text" id="aw-dept" placeholder="희망 학과">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">수상작 이미지 업로드</label>
+            <div class="drop-zone" id="aw-drop-zone">
+              <input class="dz-input" type="file" id="aw-file-input" accept="image/*,.pdf">
+              <div class="dz-icon">🏆</div>
+              <div class="dz-txt">Click or drag to upload</div>
+              <div class="dz-sub">JPG · PNG · PDF · MAX 10MB</div>
+            </div>
+            <div class="dz-preview" id="aw-dz-preview"></div>
+          </div>
+          <button class="submit-btn" onclick="submitAward()">수상작 등록하기</button>
+        </div>
+        <div class="upload-info">
+          <div class="info-block">
+            <div class="ib-title">수상 등급 안내</div>
+            <div class="ib-step">
+              <div style="font-size:22px;flex-shrink:0;line-height:1">🥇</div>
+              <div class="ib-txt"><strong style="color:var(--cream)">최우수상</strong> — 학년별 1등 수상작</div>
+            </div>
+            <div class="ib-step">
+              <div style="font-size:22px;flex-shrink:0;line-height:1">🥈</div>
+              <div class="ib-txt"><strong style="color:var(--cream)">우수상</strong> — 학년별 2등 수상작</div>
+            </div>
+            <div class="ib-step">
+              <div style="font-size:22px;flex-shrink:0;line-height:1">🥉</div>
+              <div class="ib-txt"><strong style="color:var(--cream)">장려상</strong> — 학년별 우수 수상작</div>
+            </div>
+          </div>
+          <div class="info-block">
+            <div class="ib-title">시상 기준</div>
+            <div class="ib-step"><div class="ib-num">Q</div><div class="ib-txt">질문의 적절성 및 탐구성 — 40점</div></div>
+            <div class="ib-step"><div class="ib-num">S</div><div class="ib-txt">진로설계 구체성 및 실현가능성 — 30점</div></div>
+            <div class="ib-step"><div class="ib-num">C</div><div class="ib-txt">창의성 및 완성도 — 30점</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- UPLOAD -->
+<section class="upload-sec" id="upload">
+  <div class="upload-con">
+    <div class="upload-header">
+      <div class="uh-en">Submit <em>Your Work</em></div>
+      <div class="uh-kr">작품 등록</div>
+    </div>
+    <div class="upload-layout">
+      <div class="upload-form-wrap">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">학번</label>
+            <input class="form-input" type="text" id="inp-sid" placeholder="20341">
+          </div>
+          <div class="form-group">
+            <label class="form-label">이름 *</label>
+            <input class="form-input" type="text" id="inp-name" placeholder="홍길동">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">학년 *</label>
+            <select class="form-select" id="inp-grade">
+              <option value="">선택</option>
+              <option value="1">1학년</option>
+              <option value="2">2학년</option>
+              <option value="3">3학년</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">반 *</label>
+            <select class="form-select" id="inp-class">
+              <option value="">선택</option>
+              <option>1반</option><option>2반</option><option>3반</option>
+              <option>4반</option><option>5반</option><option>6반</option>
+              <option>7반</option><option>8반</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">작품 제목 (진로 주제) *</label>
+          <input class="form-input" type="text" id="inp-title" placeholder="예: 나는 어떤 의사가 될 것인가?">
+        </div>
+        <div class="form-group">
+          <label class="form-label">나의 핵심 질문</label>
+          <textarea class="form-textarea" id="inp-question" placeholder="진로를 설계하며 스스로 던진 핵심 질문을 적어주세요."></textarea>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">희망 직업</label>
+            <input class="form-input" type="text" id="inp-job" placeholder="희망 직업">
+          </div>
+          <div class="form-group">
+            <label class="form-label">희망 학과</label>
+            <input class="form-input" type="text" id="inp-dept" placeholder="희망 학과">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">희망 대학</label>
+            <input class="form-input" type="text" id="inp-univ" placeholder="희망 대학">
+          </div>
+          <div class="form-group">
+            <label class="form-label">희망 고교</label>
+            <input class="form-input" type="text" id="inp-hs" placeholder="희망 고교">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">공모전 양식 이미지 업로드</label>
+          <div class="drop-zone" id="drop-zone">
+            <input class="dz-input" type="file" id="file-input" accept="image/*,.pdf" multiple>
+            <div class="dz-icon">📎</div>
+            <div class="dz-txt">Click or drag to upload</div>
+            <div class="dz-sub">JPG · PNG · PDF · MAX 10MB</div>
+          </div>
+          <div class="dz-preview" id="dz-preview"></div>
+        </div>
+        <button class="submit-btn" onclick="submitWork()">Register Work</button>
+      </div>
+
+      <div class="upload-info">
+        <div class="info-block">
+          <div class="ib-title">How to Submit</div>
+          <div class="ib-step"><div class="ib-num">I</div><div class="ib-txt">공모전 양식(앞면·뒷면)을 작성하고 사진 촬영 또는 스캔합니다.</div></div>
+          <div class="ib-step"><div class="ib-num">II</div><div class="ib-txt">학번·이름·학년·반·작품 제목을 입력합니다.</div></div>
+          <div class="ib-step"><div class="ib-num">III</div><div class="ib-txt">핵심 질문과 희망 진로 정보를 입력합니다.</div></div>
+          <div class="ib-step"><div class="ib-num">IV</div><div class="ib-txt">이미지를 드래그하거나 클릭해 업로드합니다.</div></div>
+          <div class="ib-step"><div class="ib-num">V</div><div class="ib-txt">Register Work 버튼을 눌러 전시에 등록합니다.</div></div>
+        </div>
+
+        <div class="info-block crit-block">
+          <div class="ib-title">Evaluation Criteria</div>
+          <div class="crit-item-up">
+            <div class="ci-letter">Q</div>
+            <div class="ci-right">
+              <div class="ci-name">질문의 적절성 및 탐구성</div>
+              <div class="ci-score">40 points</div>
+            </div>
+          </div>
+          <div class="crit-item-up">
+            <div class="ci-letter">S</div>
+            <div class="ci-right">
+              <div class="ci-name">진로설계 구체성 및 실현가능성</div>
+              <div class="ci-score">30 points</div>
+            </div>
+          </div>
+          <div class="crit-item-up">
+            <div class="ci-letter">C</div>
+            <div class="ci-right">
+              <div class="ci-name">창의성 및 완성도</div>
+              <div class="ci-score">30 points</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="warn-block">
+          <p class="wb-txt"><strong>주의:</strong> AI 생성물을 그대로 복제·전재하는 행위는 금지됩니다. 결과물은 반드시 참가자의 고유한 사고와 해석을 기반으로 재구성되어야 합니다.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="foot-in">
+    <div>
+      <div class="foot-logo-en">Question-based Career Design</div>
+      <div class="foot-logo-kr">질문기반 진로설계 공모전 전시회</div>
+    </div>
+    <div class="foot-orn"><div class="foot-diamond"></div></div>
+    <div class="foot-info">
+      <div style="font-family:var(--fk);font-size:14px;color:var(--cream);font-weight:400;letter-spacing:2px;margin-bottom:8px;">주관: 인천공항중학교 진로상담부</div>
+      <div style="font-family:var(--fk);font-size:14px;color:var(--gold-l);letter-spacing:1px;">AI 플랫폼 디자이너 · 조유진</div>
+    </div>
+  </div>
+</footer>
+
+<!-- MODAL -->
+<div class="modal-bd" id="modal-bd" onclick="closeBg(event)">
+  <div class="modal" id="modal">
+    <div class="modal-accent" id="m-accent"></div>
+    <div class="modal-header-inner">
+      <div class="mh-left">
+        <div class="m-grade-pill" id="m-grade"></div>
+        <div class="m-title" id="m-title"></div>
+        <div class="m-author" id="m-author"></div>
+      </div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <img class="m-img" id="m-img" src="" alt="" style="display:none">
+    <div class="modal-body">
+      <div class="m-section" id="m-q-sec">
+        <div class="m-section-en">Core Question</div>
+        <div class="m-rule"></div>
+        <div class="m-section-text" id="m-question"></div>
+      </div>
+      <div class="m-section" id="m-career-sec">
+        <div class="m-section-en">Career Vision</div>
+        <div class="m-rule"></div>
+        <div class="m-careers" id="m-careers"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- AWARD MODAL -->
+<div class="award-modal-bd" id="award-modal-bd" onclick="closeAwardModalBg(event)">
+  <div class="award-modal">
+    <div class="am-header">
+      <div>
+        <div class="am-badge-row">
+          <span class="am-badge" id="am-icon"></span>
+          <span class="am-award-name" id="am-award-name"></span>
+        </div>
+        <div class="am-title" id="am-title"></div>
+        <div class="am-author" id="am-author"></div>
+      </div>
+      <button class="am-close" onclick="closeAwardModal()">✕</button>
+    </div>
+    <img class="am-img" id="am-img" src="" alt="" style="display:none">
+    <div class="am-body">
+      <div class="am-section" id="am-q-sec">
+        <div class="am-section-label">Core Question</div>
+        <div class="am-rule"></div>
+        <div class="am-text" id="am-question"></div>
+      </div>
+      <div class="am-section" id="am-career-sec">
+        <div class="am-section-label">Career Vision</div>
+        <div class="am-rule"></div>
+        <div class="am-careers" id="am-careers"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- LIGHTBOX -->
+<div class="lightbox" id="lightbox" onclick="closeLightbox()">
+  <div class="lb-inner" onclick="event.stopPropagation()">
+    <img class="lb-img" id="lb-img" src="" alt="">
+  </div>
+  <button class="lb-close" onclick="closeLightbox()">✕</button>
+  <div class="lb-caption" id="lb-caption"></div>
+  <div class="lb-hint">Click anywhere to close</div>
+</div>
+
+<!-- EDIT MODAL -->
+<div class="edit-bd" id="edit-bd" onclick="closeEditBg(event)">
+  <div class="edit-modal">
+    <div class="edit-modal-header">
+      <div class="edit-modal-title"><em>Edit</em> Work</div>
+      <button class="edit-modal-close" onclick="closeEdit()">✕</button>
+    </div>
+    <div class="edit-modal-body">
+      <input type="hidden" id="edit-id">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">학번</label>
+          <input class="form-input" type="text" id="edit-sid" placeholder="20341">
+        </div>
+        <div class="form-group">
+          <label class="form-label">이름 *</label>
+          <input class="form-input" type="text" id="edit-name" placeholder="홍길동">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">학년 *</label>
+          <select class="form-select" id="edit-grade">
+            <option value="">선택</option>
+            <option value="1">1학년</option>
+            <option value="2">2학년</option>
+            <option value="3">3학년</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">반 *</label>
+          <select class="form-select" id="edit-class">
+            <option value="">선택</option>
+            <option>1반</option><option>2반</option><option>3반</option>
+            <option>4반</option><option>5반</option><option>6반</option>
+            <option>7반</option><option>8반</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">작품 제목 *</label>
+        <input class="form-input" type="text" id="edit-title">
+      </div>
+      <div class="form-group">
+        <label class="form-label">핵심 질문</label>
+        <textarea class="form-textarea" id="edit-question"></textarea>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">희망 직업</label>
+          <input class="form-input" type="text" id="edit-job">
+        </div>
+        <div class="form-group">
+          <label class="form-label">희망 학과</label>
+          <input class="form-input" type="text" id="edit-dept">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">희망 대학</label>
+          <input class="form-input" type="text" id="edit-univ">
+        </div>
+        <div class="form-group">
+          <label class="form-label">희망 고교</label>
+          <input class="form-input" type="text" id="edit-hs">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">이미지 변경</label>
+        <img class="edit-current-img" id="edit-current-img" src="" alt="" style="display:none">
+        <div class="edit-dz" id="edit-dz">
+          <input class="edit-dz-input" type="file" id="edit-file" accept="image/*,.pdf">
+          <div class="dz-icon">🖼</div>
+          <div class="dz-txt">새 이미지로 교체하려면 클릭하거나 드래그</div>
+          <div class="dz-sub">JPG · PNG · PDF · MAX 10MB</div>
+        </div>
+        <button class="edit-img-clear" id="edit-img-clear" onclick="clearEditImg()" style="display:none">× 이미지 삭제</button>
+      </div>
+      <div class="edit-actions">
+        <button class="edit-save-btn" onclick="saveEdit()">Save Changes</button>
+        <button class="edit-delete-btn" onclick="deleteWork()">Delete Work</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script type="module">
+import { initializeApp }       from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getDatabase, ref, set, update, onValue }
+  from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js';
+
+/* ══════════════════════════════════════════════
+   🔥 FIREBASE 설정
+   1. https://console.firebase.google.com 접속
+   2. 프로젝트 만들기 → 웹앱 추가 → 아래 값 교체
+   3. Realtime Database 생성 → 규칙 탭에 아래 붙여넣기:
+      { "rules": { ".read": true, ".write": true } }
+══════════════════════════════════════════════ */
+const firebaseConfig = {
+  apiKey:            "여기에_붙여넣기",
+  authDomain:        "여기에_붙여넣기",
+  databaseURL:       "여기에_붙여넣기",
+  projectId:         "여기에_붙여넣기",
+  storageBucket:     "여기에_붙여넣기",
+  messagingSenderId: "여기에_붙여넣기",
+  appId:             "여기에_붙여넣기"
+};
+
+const app = initializeApp(firebaseConfig);
+const db  = getDatabase(app);
+
+const GL = {
+  '1': { label:'1st Grade', accentClass:'ma-1', pillClass:'mp-1', accClass:'acc-1', gpClass:'gp-1' },
+  '2': { label:'2nd Grade', accentClass:'ma-2', pillClass:'mp-2', accClass:'acc-2', gpClass:'gp-2' },
+  '3': { label:'3rd Grade', accentClass:'ma-3', pillClass:'mp-3', accClass:'acc-3', gpClass:'gp-3' },
+};
+
+/* 작품 목록 — 이 PC의 localStorage (등록·수정·삭제는 이 PC에서만) */
+let works   = JSON.parse(localStorage.getItem('gallery_works_v4') || '[]');
+/* 좋아요 — Firebase 실시간 동기화 */
+let likesMap = {};
+let myLikes  = JSON.parse(localStorage.getItem('career_my_likes') || '{}');
+
+let filter = 'all';
+let files  = [];
+
+/* ── 좋아요 실시간 구독 ── */
+onValue(ref(db, 'likes'), snap => {
+  likesMap = snap.val() || {};
+  renderWorks();
+});
+
+function saveLocal() {
+  localStorage.setItem('gallery_works_v4', JSON.stringify(works));
+}
+
+function showLoading(on) {
+  const el = document.getElementById('gallery-loading');
+  if (el) el.style.display = on ? 'block' : 'none';
+}
+
+function updateStats() {
+  const n = works.length;
+  document.getElementById('hero-count').textContent  = n + '점';
+  document.getElementById('gallery-count').textContent = n;
+}
+
+function renderWorks() {
+  const grid = document.getElementById('work-grid');
+  const list = filter === 'all' ? works : works.filter(w => w.grade === filter);
+  showLoading(false);
+  updateStats();
+
+  if (!list.length) {
+    grid.innerHTML = `<div class="empty-state"><div class="es-en">No works yet</div><div class="es-kr">아직 등록된 작품이 없습니다.<br>아래에서 작품을 등록해보세요.</div></div>`;
+    return;
+  }
+
+  grid.innerHTML = list.map((w, i) => {
+    const g     = GL[w.grade] || GL['1'];
+    const likes = likesMap[w.id] || 0;
+    const liked = !!myLikes[w.id];
+    return `
+    <div class="work-card" style="animation-delay:${i * 0.06}s">
+      <div class="work-card-accent ${g.accClass}"></div>
+      <div class="work-card-mat">
+        <div class="work-thumb">
+          ${w.imgSrc
+            ? `<img src="${w.imgSrc}" alt="${esc(w.title)}">`
+            : `<div class="work-thumb-ph"><div style="font-size:28px;opacity:0.25">◈</div><div class="wt-en">No Image</div></div>`}
+        </div>
+      </div>
+      <div class="work-body">
+        <div class="work-grade-pill ${g.gpClass}">${g.label} &nbsp;·&nbsp; ${esc(w.cls)}</div>
+        <div class="work-title">${esc(w.title)}</div>
+        <div class="work-author">${esc(w.name)}${w.sid ? ' · ' + esc(w.sid) : ''}</div>
+        ${w.question ? `
+        <div class="work-q">
+          <div class="wq-en">Core Question</div>
+          <div class="wq-text">"${esc(w.question)}"</div>
+        </div>` : ''}
+        <div class="work-careers">
+          ${w.job  ? `<div class="career-tag">${esc(w.job)}</div>` : ''}
+          ${w.dept ? `<div class="career-tag">${esc(w.dept)}</div>` : ''}
+        </div>
+      </div>
+      <div class="work-footer">
+        <button class="like-btn ${liked ? 'liked' : ''}" onclick="toggleLike('${w.id}')">
+          ${liked ? '♥' : '♡'} &nbsp;${likes}
+        </button>
+        <div class="work-footer-right">
+          <button class="edit-btn" onclick="openEdit('${w.id}')">Edit</button>
+          <button class="detail-btn" onclick="openModal('${w.id}')">View details →</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+window.filterWorks = (g, btn) => {
+  filter = g;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderWorks();
+};
+
+/* ── 좋아요 토글 — Firebase에 기록, 어디서나 누적 ── */
+window.toggleLike = async (id) => {
+  const current = likesMap[id] || 0;
+  const liked   = !!myLikes[id];
+  const next    = liked ? Math.max(0, current - 1) : current + 1;
+  if (liked) delete myLikes[id]; else myLikes[id] = true;
+  localStorage.setItem('career_my_likes', JSON.stringify(myLikes));
+  await update(ref(db, 'likes'), { [id]: next });
+};
+
+window.openModal = (id) => {
+  const w = works.find(x => x.id === id); if (!w) return;
+  const g = GL[w.grade] || GL['1'];
+  document.getElementById('m-accent').className = 'modal-accent ' + g.accentClass;
+  const gp = document.getElementById('m-grade');
+  gp.textContent = g.label + ' · ' + w.cls;
+  gp.className   = 'm-grade-pill ' + g.pillClass;
+  document.getElementById('m-title').textContent  = w.title;
+  document.getElementById('m-author').textContent = w.name + (w.sid ? ' · ' + w.sid : '');
+  const qsec = document.getElementById('m-q-sec');
+  if (w.question) { document.getElementById('m-question').textContent = '"' + w.question + '"'; qsec.style.display = ''; }
+  else { qsec.style.display = 'none'; }
+  const cars = [
+    w.job  ? `<span class="m-career">${esc(w.job)}</span>`  : '',
+    w.dept ? `<span class="m-career">${esc(w.dept)}</span>` : '',
+    w.univ ? `<span class="m-career">${esc(w.univ)}</span>` : '',
+    w.hs   ? `<span class="m-career">${esc(w.hs)}</span>`   : '',
+  ].filter(Boolean).join('');
+  document.getElementById('m-careers').innerHTML = cars;
+  document.getElementById('m-career-sec').style.display = cars ? '' : 'none';
+  const img = document.getElementById('m-img');
+  if (w.imgSrc) { img.src = w.imgSrc; img.style.display = 'block'; img.onclick = () => openLightbox(w.imgSrc, w.title); }
+  else { img.style.display = 'none'; img.onclick = null; }
+  document.getElementById('modal-bd').classList.add('open');
+  document.body.style.overflow = 'hidden';
+};
+
+window.closeBg = (e) => { if (e.target === document.getElementById('modal-bd')) closeModal(); };
+window.closeModal = () => { document.getElementById('modal-bd').classList.remove('open'); document.body.style.overflow = ''; };
+
+/* ── 파일 업로드 ── */
+const dz = document.getElementById('drop-zone');
+const fi = document.getElementById('file-input');
+const dp = document.getElementById('dz-preview');
+dz.addEventListener('dragover',  e => { e.preventDefault(); dz.classList.add('drag-over'); });
+dz.addEventListener('dragleave', () => dz.classList.remove('drag-over'));
+dz.addEventListener('drop', e => { e.preventDefault(); dz.classList.remove('drag-over'); handleFiles(e.dataTransfer.files); });
+fi.addEventListener('change', e => handleFiles(e.target.files));
+
+function handleFiles(flist) {
+  Array.from(flist).forEach(f => {
+    if (f.size > 10*1024*1024) { showToast('파일 크기는 10MB 이하여야 합니다.'); return; }
+    const r = new FileReader();
+    r.onload = ev => { files.push({ src: ev.target.result }); renderPreview(); };
+    r.readAsDataURL(f);
+  });
+}
+function renderPreview() {
+  if (!files.length) { dp.classList.remove('show'); dp.innerHTML = ''; return; }
+  dp.classList.add('show');
+  dp.innerHTML = files.map((f,i) => `<div class="dz-thumb"><img src="${f.src}"><button class="dz-thumb-del" onclick="removeFile(${i})">✕</button></div>`).join('');
+}
+window.removeFile = i => { files.splice(i,1); renderPreview(); };
+
+/* ── 작품 등록 (이 PC에서만) ── */
+window.submitWork = async () => {
+  const grade = document.getElementById('inp-grade').value;
+  const cls   = document.getElementById('inp-class').value;
+  const name  = document.getElementById('inp-name').value.trim();
+  const title = document.getElementById('inp-title').value.trim();
+  if (!grade||!cls||!name||!title) { showToast('학년, 반, 이름, 작품 제목은 필수입니다.'); return; }
+
+  const btn = document.querySelector('.submit-btn');
+  btn.textContent = '등록 중...'; btn.disabled = true;
+
+  const w = {
+    id: Date.now().toString(),
+    sid: document.getElementById('inp-sid').value.trim(),
+    grade, cls, name, title,
+    question: document.getElementById('inp-question').value.trim(),
+    job:  document.getElementById('inp-job').value.trim(),
+    dept: document.getElementById('inp-dept').value.trim(),
+    univ: document.getElementById('inp-univ').value.trim(),
+    hs:   document.getElementById('inp-hs').value.trim(),
+    imgSrc: files.length ? files[0].src : null,
+  };
+  works.unshift(w);
+  saveLocal();
+
+  /* 좋아요 초기값 Firebase에 등록 */
+  try { await update(ref(db,'likes'), { [w.id]: 0 }); } catch(e) {}
+
+  ['inp-sid','inp-grade','inp-class','inp-name','inp-title','inp-question','inp-job','inp-dept','inp-univ','inp-hs']
+    .forEach(id => { document.getElementById(id).value = ''; });
+  files = []; renderPreview(); fi.value = '';
+  btn.textContent = 'Register Work'; btn.disabled = false;
+  renderWorks();
+  showToast('작품이 등록됐습니다!');
+  setTimeout(() => document.getElementById('gallery').scrollIntoView({ behavior:'smooth' }), 700);
+};
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3200);
+}
+
+function esc(s) {
+  if (!s) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+/* ── 라이트박스 ── */
+window.openLightbox = (src, title) => {
+  document.getElementById('lb-img').src = src;
+  document.getElementById('lb-caption').textContent = title||'';
+  document.getElementById('lightbox').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  document._lbEsc = e => { if(e.key==='Escape') closeLightbox(); };
+  document.addEventListener('keydown', document._lbEsc);
+};
+window.closeLightbox = () => {
+  document.getElementById('lightbox').classList.remove('open');
+  document.body.style.overflow = '';
+  document.removeEventListener('keydown', document._lbEsc);
+};
+
+/* ── 수정 모달 (이 PC에서만) ── */
+let editFiles = [];
+window.openEdit = (id) => {
+  const w = works.find(x=>x.id===id); if(!w) return;
+  document.getElementById('edit-id').value       = id;
+  document.getElementById('edit-sid').value      = w.sid||'';
+  document.getElementById('edit-name').value     = w.name||'';
+  document.getElementById('edit-grade').value    = w.grade||'';
+  document.getElementById('edit-class').value    = w.cls||'';
+  document.getElementById('edit-title').value    = w.title||'';
+  document.getElementById('edit-question').value = w.question||'';
+  document.getElementById('edit-job').value      = w.job||'';
+  document.getElementById('edit-dept').value     = w.dept||'';
+  document.getElementById('edit-univ').value     = w.univ||'';
+  document.getElementById('edit-hs').value       = w.hs||'';
+  const ci = document.getElementById('edit-current-img');
+  const cb = document.getElementById('edit-img-clear');
+  if (w.imgSrc) { ci.src=w.imgSrc; ci.style.display='block'; cb.style.display='inline-block'; }
+  else          { ci.style.display='none'; cb.style.display='none'; }
+  editFiles=[];
+  document.getElementById('edit-file').value='';
+  document.getElementById('edit-bd').classList.add('open');
+  document.body.style.overflow='hidden';
+};
+window.closeEditBg = e => { if(e.target===document.getElementById('edit-bd')) closeEdit(); };
+window.closeEdit   = () => { document.getElementById('edit-bd').classList.remove('open'); document.body.style.overflow=''; editFiles=[]; };
+window.clearEditImg = () => {
+  document.getElementById('edit-current-img').style.display='none';
+  document.getElementById('edit-img-clear').style.display='none';
+  editFiles=[];
+};
+window.saveEdit = async () => {
+  const id=document.getElementById('edit-id').value;
+  const grade=document.getElementById('edit-grade').value;
+  const cls=document.getElementById('edit-class').value;
+  const name=document.getElementById('edit-name').value.trim();
+  const title=document.getElementById('edit-title').value.trim();
+  if(!grade||!cls||!name||!title){showToast('학년, 반, 이름, 작품 제목은 필수입니다.');return;}
+  const w=works.find(x=>x.id===id); if(!w) return;
+  w.sid=document.getElementById('edit-sid').value.trim();
+  w.grade=grade; w.cls=cls; w.name=name; w.title=title;
+  w.question=document.getElementById('edit-question').value.trim();
+  w.job=document.getElementById('edit-job').value.trim();
+  w.dept=document.getElementById('edit-dept').value.trim();
+  w.univ=document.getElementById('edit-univ').value.trim();
+  w.hs=document.getElementById('edit-hs').value.trim();
+  const ci=document.getElementById('edit-current-img');
+  if(editFiles.length>0){w.imgSrc=editFiles[0].src;}
+  else if(ci.style.display==='none'){w.imgSrc=null;}
+  saveLocal(); renderWorks(); closeEdit();
+  showToast('작품이 수정되었습니다.');
+};
+window.deleteWork = async () => {
+  const id=document.getElementById('edit-id').value;
+  if(!confirm('이 작품을 전시에서 삭제하시겠습니까?')) return;
+  works=works.filter(x=>x.id!==id);
+  saveLocal();
+  try { await set(ref(db,`likes/${id}`),null); } catch(e){}
+  renderWorks(); closeEdit();
+  showToast('작품이 삭제되었습니다.');
+};
+
+const edz=document.getElementById('edit-dz');
+const efi=document.getElementById('edit-file');
+edz.addEventListener('dragover', e=>{e.preventDefault();edz.classList.add('drag-over');});
+edz.addEventListener('dragleave',()=>edz.classList.remove('drag-over'));
+edz.addEventListener('drop',e=>{e.preventDefault();edz.classList.remove('drag-over');handleEditFiles(e.dataTransfer.files);});
+efi.addEventListener('change',e=>handleEditFiles(e.target.files));
+function handleEditFiles(flist){
+  const f=flist[0]; if(!f) return;
+  if(f.size>10*1024*1024){showToast('파일 크기는 10MB 이하여야 합니다.');return;}
+  const r=new FileReader();
+  r.onload=ev=>{
+    editFiles=[{src:ev.target.result}];
+    const ci=document.getElementById('edit-current-img');
+    ci.src=ev.target.result; ci.style.display='block';
+    document.getElementById('edit-img-clear').style.display='inline-block';
+  };
+  r.readAsDataURL(f);
+}
+
+/* ── 수상작 ── */
+let awardWorks  = JSON.parse(localStorage.getItem('award_works_v1') || '[]');
+let awFiles     = [];
+let selectedAward = { award: '', icon: '' };
+
+function saveAwardLocal() {
+  localStorage.setItem('award_works_v1', JSON.stringify(awardWorks));
+}
+
+window.selectAward = (btn) => {
+  document.querySelectorAll('.award-pick-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  selectedAward = { award: btn.dataset.award, icon: btn.dataset.icon };
+};
+
+function awardBadgeClass(award) {
+  if (award === '최우수상') return 'ab-gold';
+  if (award === '우수상')   return 'ab-silver';
+  if (award === '장려상')   return 'ab-bronze';
+  return '';
+}
+
+function renderAwards() {
+  const grid = document.getElementById('award-grid');
+  if (!awardWorks.length) {
+    grid.innerHTML = `<div class="award-empty"><div class="ae-en">No awards yet</div><div class="ae-kr">수상작이 아직 등록되지 않았습니다.</div></div>`;
+    return;
+  }
+  grid.innerHTML = awardWorks.map((w, i) => `
+    <div class="award-card" style="animation-delay:${i*0.06}s">
+      ${w.icon ? `<div class="award-badge ${awardBadgeClass(w.award)}">${w.icon}</div>` : ''}
+      <div class="award-card-mat">
+        <div class="award-thumb">
+          ${w.imgSrc
+            ? `<img src="${w.imgSrc}" alt="${esc(w.title)}">`
+            : `<div class="award-thumb-ph"><div style="font-size:28px">◈</div></div>`}
+        </div>
+      </div>
+      <div class="award-body">
+        ${w.award ? `<div style="font-family:var(--fd);font-style:italic;font-size:11px;color:var(--gold);letter-spacing:1.5px;margin-bottom:6px;margin-top:12px;">${w.icon} ${w.award}</div>` : '<div style="margin-top:12px"></div>'}
+        <div class="award-title">${esc(w.title)}</div>
+        <div class="award-author">${esc(w.name)}${w.sid?' · '+esc(w.sid):''} &nbsp;·&nbsp; ${esc(w.grade)}학년 ${esc(w.cls)}</div>
+        ${w.question ? `<div class="award-q"><div class="aq-label">Core Question</div><div class="aq-text">"${esc(w.question)}"</div></div>` : ''}
+      </div>
+      <div class="award-footer">
+        <button class="award-detail-btn" onclick="openAwardModal('${w.id}')">View details →</button>
+      </div>
+    </div>`).join('');
+}
+
+window.openAwardModal = (id) => {
+  const w = awardWorks.find(x => x.id === id); if (!w) return;
+  document.getElementById('am-icon').textContent      = w.icon || '';
+  document.getElementById('am-award-name').textContent = w.award || '';
+  document.getElementById('am-title').textContent      = w.title;
+  document.getElementById('am-author').textContent     = w.name + (w.sid?' · '+w.sid:'') + ' · ' + w.grade + '학년 ' + w.cls;
+  const qsec = document.getElementById('am-q-sec');
+  if (w.question) { document.getElementById('am-question').textContent = '"'+w.question+'"'; qsec.style.display=''; }
+  else { qsec.style.display='none'; }
+  const cars = [
+    w.job  ? `<span class="am-career">${esc(w.job)}</span>`  : '',
+    w.dept ? `<span class="am-career">${esc(w.dept)}</span>` : '',
+  ].filter(Boolean).join('');
+  document.getElementById('am-careers').innerHTML = cars;
+  document.getElementById('am-career-sec').style.display = cars ? '' : 'none';
+  const img = document.getElementById('am-img');
+  if (w.imgSrc) {
+    img.src=w.imgSrc; img.style.display='block';
+    img.onclick = () => openLightbox(w.imgSrc, w.title);
+  } else { img.style.display='none'; img.onclick=null; }
+  document.getElementById('award-modal-bd').classList.add('open');
+  document.body.style.overflow='hidden';
+};
+window.closeAwardModalBg = e => { if(e.target===document.getElementById('award-modal-bd')) closeAwardModal(); };
+window.closeAwardModal = () => { document.getElementById('award-modal-bd').classList.remove('open'); document.body.style.overflow=''; };
+
+/* 수상작 파일 */
+const awDz = document.getElementById('aw-drop-zone');
+const awFi = document.getElementById('aw-file-input');
+const awDp = document.getElementById('aw-dz-preview');
+awDz.addEventListener('dragover', e=>{e.preventDefault();awDz.classList.add('drag-over');});
+awDz.addEventListener('dragleave',()=>awDz.classList.remove('drag-over'));
+awDz.addEventListener('drop',e=>{e.preventDefault();awDz.classList.remove('drag-over');handleAwFiles(e.dataTransfer.files);});
+awFi.addEventListener('change',e=>handleAwFiles(e.target.files));
+function handleAwFiles(flist) {
+  const f=flist[0]; if(!f) return;
+  if(f.size>10*1024*1024){showToast('파일 크기는 10MB 이하여야 합니다.');return;}
+  const r=new FileReader();
+  r.onload=ev=>{awFiles=[{src:ev.target.result}];renderAwPreview();};
+  r.readAsDataURL(f);
+}
+function renderAwPreview(){
+  if(!awFiles.length){awDp.classList.remove('show');awDp.innerHTML='';return;}
+  awDp.classList.add('show');
+  awDp.innerHTML=`<div class="dz-thumb"><img src="${awFiles[0].src}"></div>`;
+}
+
+window.submitAward = () => {
+  const name  = document.getElementById('aw-name').value.trim();
+  const grade = document.getElementById('aw-grade').value;
+  const cls   = document.getElementById('aw-class').value;
+  const title = document.getElementById('aw-title').value.trim();
+  if (!name||!grade||!cls||!title) { showToast('이름, 학년, 반, 작품 제목은 필수입니다.'); return; }
+  const w = {
+    id: 'aw'+Date.now(),
+    sid:      document.getElementById('aw-sid').value.trim(),
+    name, grade, cls, title,
+    question: document.getElementById('aw-question').value.trim(),
+    job:      document.getElementById('aw-job').value.trim(),
+    dept:     document.getElementById('aw-dept').value.trim(),
+    award:    selectedAward.award,
+    icon:     selectedAward.icon,
+    imgSrc:   awFiles.length ? awFiles[0].src : null,
+  };
+  awardWorks.unshift(w);
+  saveAwardLocal();
+  ['aw-sid','aw-name','aw-grade','aw-class','aw-title','aw-question','aw-job','aw-dept']
+    .forEach(id=>{document.getElementById(id).value='';});
+  document.querySelectorAll('.award-pick-btn').forEach(b=>b.classList.remove('selected'));
+  selectedAward={award:'',icon:''};
+  awFiles=[]; renderAwPreview(); awFi.value='';
+  renderAwards();
+  showToast('수상작이 등록됐습니다!');
+  setTimeout(()=>document.getElementById('awards').scrollIntoView({behavior:'smooth'}),600);
+};
+
+/* ── 시작 ── */
+renderWorks();
+renderAwards();
+</script>
+</body>
+</html>
