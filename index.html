@@ -984,7 +984,8 @@ footer {
     <ul class="nav-links">
       <li><a href="#gallery" onclick="event.preventDefault();document.getElementById('gallery').scrollIntoView({behavior:'smooth'})">Exhibition</a></li>
     </ul>
-    <a href="#upload" class="nav-upload-btn">작품 등록</a>
+    <a href="#upload" class="nav-upload-btn" id="nav-upload-btn" style="display:none;">작품 등록</a>
+    <button onclick="checkAdmin()" style="font-family:var(--fk);font-size:12px;color:var(--ink-mid);background:transparent;border:1px solid var(--ink-ll);padding:6px 16px;cursor:pointer;letter-spacing:1px;margin-left:12px;transition:all 0.2s;" onmouseover="this.style.borderColor='var(--gold)';this.style.color='var(--gold)'" onmouseout="this.style.borderColor='var(--ink-ll)';this.style.color='var(--ink-mid)'">관리자</button>
   </div>
 </nav>
 
@@ -1079,7 +1080,7 @@ footer {
     </div>
 
     <!-- 수상작 등록 폼 -->
-    <div class="award-form-wrap">
+    <div class="award-form-wrap" id="award-form-wrap" style="display:none;">
       <div class="award-form-title">수상작 <em>등록하기</em></div>
       <div class="award-layout">
         <div>
@@ -1189,7 +1190,7 @@ footer {
 </section>
 
 <!-- UPLOAD -->
-<section class="upload-sec" id="upload">
+<section class="upload-sec" id="upload" style="display:none;">
   <div class="upload-con">
     <div class="upload-header">
       <div class="uh-en">Submit <em>Your Work</em></div>
@@ -1493,10 +1494,24 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 const ADMIN_PASSWORD = "admin1234";
 let isAdmin = false;
 
+function showAdminSections() {
+  const uploadSec = document.getElementById('upload');
+  const awardForm = document.getElementById('award-form-wrap');
+  const navBtn    = document.getElementById('nav-upload-btn');
+  if (uploadSec) uploadSec.style.display = '';
+  if (awardForm) awardForm.style.display = '';
+  if (navBtn)    navBtn.style.display    = '';
+}
+
 function checkAdmin() {
   if (isAdmin) return true;
   const pw = prompt('관리자 비밀번호를 입력하세요:');
-  if (pw === ADMIN_PASSWORD) { isAdmin = true; showToast('✅ 관리자 모드로 로그인되었습니다.'); return true; }
+  if (pw === ADMIN_PASSWORD) {
+    isAdmin = true;
+    showAdminSections();
+    showToast('✅ 관리자 모드로 로그인되었습니다.');
+    return true;
+  }
   showToast('❌ 비밀번호가 올바르지 않습니다.'); return false;
 }
 
@@ -1529,7 +1544,7 @@ let selectedAward = { award: '', icon: '' };
 async function loadWorks() {
   try {
     const { data, error } = await sb.from('works').select('*').order('created_at', { ascending: false });
-    if (error) { console.error('loadWorks error:', error); showToast('❌ 데이터 로드 실패: ' + error.message); return; }
+    if (error) { console.error('loadWorks error:', JSON.stringify(error)); showToast('❌ 데이터 로드 실패: ' + (error.message || error.code || JSON.stringify(error))); return; }
     works = data || [];
     renderWorks();
     renderAwards();
