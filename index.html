@@ -1482,30 +1482,28 @@ footer {
 
 <div class="toast" id="toast"></div>
 
-<script type="module">
-import { initializeApp }       from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-import { getDatabase, ref, set, update, onValue }
-  from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js';
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+/* ══ SUPABASE 설정 ══ */
+const SUPABASE_URL = 'https://hidqpyekctzugdopmkcb.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_rh2pa5_HoEK_RKRQdj5mLA_b7M9tKz6';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-/* ══════════════════════════════════════════════
-   🔥 FIREBASE 설정
-   1. https://console.firebase.google.com 접속
-   2. 프로젝트 만들기 → 웹앱 추가 → 아래 값 교체
-   3. Realtime Database 생성 → 규칙 탭에 아래 붙여넣기:
-      { "rules": { ".read": true, ".write": true } }
-══════════════════════════════════════════════ */
-const firebaseConfig = {
-  apiKey:            "여기에_붙여넣기",
-  authDomain:        "여기에_붙여넣기",
-  databaseURL:       "여기에_붙여넣기",
-  projectId:         "여기에_붙여넣기",
-  storageBucket:     "여기에_붙여넣기",
-  messagingSenderId: "여기에_붙여넣기",
-  appId:             "여기에_붙여넣기"
-};
+/* ══ 관리자 비밀번호 (여기서 변경하세요) ══ */
+const ADMIN_PASSWORD = "admin1234";
 
-const app = initializeApp(firebaseConfig);
-const db  = getDatabase(app);
+let isAdmin = false;
+function checkAdmin() {
+  if (isAdmin) return true;
+  const pw = prompt('관리자 비밀번호를 입력하세요:');
+  if (pw === ADMIN_PASSWORD) {
+    isAdmin = true;
+    showToast('✅ 관리자 모드로 로그인되었습니다.');
+    return true;
+  }
+  showToast('❌ 비밀번호가 올바르지 않습니다.');
+  return false;
+}
 
 const GL = {
   '1': { label:'1st Grade', accentClass:'ma-1', pillClass:'mp-1', accClass:'acc-1', gpClass:'gp-1' },
@@ -1513,34 +1511,47 @@ const GL = {
   '3': { label:'3rd Grade', accentClass:'ma-3', pillClass:'mp-3', accClass:'acc-3', gpClass:'gp-3' },
 };
 
-/* 작품 목록 — 이 PC의 localStorage (등록·수정·삭제는 이 PC에서만) */
-let works   = JSON.parse(localStorage.getItem('gallery_works_v4') || '[]');
-/* 좋아요 — Firebase 실시간 동기화 */
-let likesMap = {};
-let myLikes  = JSON.parse(localStorage.getItem('career_my_likes') || '{}');
-
+let works = [];
+let awardWorks = [];
+let myLikes = JSON.parse(localStorage.getItem('career_my_likes') || '{}');
 let filter = 'all';
-let files  = [];
+let files = [];
 
-/* ── 좋아요 실시간 구독 ── */
-onValue(ref(db, 'likes'), snap => {
-  likesMap = snap.val() || {};
+/* ── 초기 데이터 로드 ── */
+async function loadWorks() {
+  const { data } = await sb.from('works').select('*').order('created_at', { ascending: false });
+  works = data || [];
   renderWorks();
-});
+}
 
-function saveLocal() {
-  localStorage.setItem('gallery_works_v4', JSON.stringify(works));
+async function loadAwards() {
+  const { data } = await sb.from('award_works').select('*').order('created_at', { ascending: false });
+  awardWorks = data || [];
+  renderAwards();
+}
+
+/* ── 실시간 구독 ── */
+sb.channel('works-channel')
+  .on('postgres_changes', { event: '*', schema: 'public', table: 'works' }, () => loadWorks())
+  .subscribe();
+
+sb.channel('awards-channel')
+  .on('postgres_changes', { event: '*', schema: 'public', table: 'award_works' }, () => loadAwards())
+  .subscribe();
+
+sb.channel('likes-channel')
+  .on('postgres_changes', { event: '*', schema: 'public', table: 'likes' }, () => { loadWorks(); })
+  .subscribe();
+
+function updateStats() {
+  const n = works.length;
+  document.getElementById('hero-count').textContent = n + '점';
+  document.getElementById('gallery-count').textContent = n;
 }
 
 function showLoading(on) {
   const el = document.getElementById('gallery-loading');
   if (el) el.style.display = on ? 'block' : 'none';
-}
-
-function updateStats() {
-  const n = works.length;
-  document.getElementById('hero-count').textContent  = n + '점';
-  document.getElementById('gallery-count').textContent = n;
 }
 
 function renderWorks() {
@@ -1555,16 +1566,15 @@ function renderWorks() {
   }
 
   grid.innerHTML = list.map((w, i) => {
-    const g     = GL[w.grade] || GL['1'];
-    const likes = likesMap[w.id] || 0;
+    const g = GL[w.grade] || GL['1'];
     const liked = !!myLikes[w.id];
     return `
     <div class="work-card" style="animation-delay:${i * 0.06}s">
       <div class="work-card-accent ${g.accClass}"></div>
       <div class="work-card-mat">
         <div class="work-thumb">
-          ${w.imgSrc
-            ? `<img src="${w.imgSrc}" alt="${esc(w.title)}">`
+          ${w.img_src
+            ? `<img src="${w.img_src}" alt="${esc(w.title)}">`
             : `<div class="work-thumb-ph"><div style="font-size:28px;opacity:0.25">◈</div><div class="wt-en">No Image</div></div>`}
         </div>
       </div>
@@ -1572,19 +1582,15 @@ function renderWorks() {
         <div class="work-grade-pill ${g.gpClass}">${g.label} &nbsp;·&nbsp; ${esc(w.cls)}</div>
         <div class="work-title">${esc(w.title)}</div>
         <div class="work-author">${esc(w.name)}${w.sid ? ' · ' + esc(w.sid) : ''}</div>
-        ${w.question ? `
-        <div class="work-q">
-          <div class="wq-en">Core Question</div>
-          <div class="wq-text">"${esc(w.question)}"</div>
-        </div>` : ''}
+        ${w.question ? `<div class="work-q"><div class="wq-en">Core Question</div><div class="wq-text">"${esc(w.question)}"</div></div>` : ''}
         <div class="work-careers">
           ${w.job  ? `<div class="career-tag">${esc(w.job)}</div>` : ''}
           ${w.dept ? `<div class="career-tag">${esc(w.dept)}</div>` : ''}
         </div>
       </div>
       <div class="work-footer">
-        <button class="like-btn ${liked ? 'liked' : ''}" onclick="toggleLike('${w.id}')">
-          ${liked ? '♥' : '♡'} &nbsp;${likes}
+        <button class="like-btn ${liked ? 'liked' : ''}" onclick="toggleLike('${w.id}', ${w.likes||0})">
+          ${liked ? '♥' : '♡'} &nbsp;${w.likes || 0}
         </button>
         <div class="work-footer-right">
           <button class="edit-btn" onclick="openEdit('${w.id}')">Edit</button>
@@ -1602,16 +1608,17 @@ window.filterWorks = (g, btn) => {
   renderWorks();
 };
 
-/* ── 좋아요 토글 — Firebase에 기록, 어디서나 누적 ── */
-window.toggleLike = async (id) => {
-  const current = likesMap[id] || 0;
-  const liked   = !!myLikes[id];
-  const next    = liked ? Math.max(0, current - 1) : current + 1;
+/* ── 좋아요 ── */
+window.toggleLike = async (id, current) => {
+  const liked = !!myLikes[id];
+  const next  = liked ? Math.max(0, current - 1) : current + 1;
   if (liked) delete myLikes[id]; else myLikes[id] = true;
   localStorage.setItem('career_my_likes', JSON.stringify(myLikes));
-  await update(ref(db, 'likes'), { [id]: next });
+  await sb.from('works').update({ likes: next }).eq('id', id);
+  loadWorks();
 };
 
+/* ── 상세 모달 ── */
 window.openModal = (id) => {
   const w = works.find(x => x.id === id); if (!w) return;
   const g = GL[w.grade] || GL['1'];
@@ -1633,12 +1640,11 @@ window.openModal = (id) => {
   document.getElementById('m-careers').innerHTML = cars;
   document.getElementById('m-career-sec').style.display = cars ? '' : 'none';
   const img = document.getElementById('m-img');
-  if (w.imgSrc) { img.src = w.imgSrc; img.style.display = 'block'; img.onclick = () => openLightbox(w.imgSrc, w.title); }
+  if (w.img_src) { img.src = w.img_src; img.style.display = 'block'; img.onclick = () => openLightbox(w.img_src, w.title); }
   else { img.style.display = 'none'; img.onclick = null; }
   document.getElementById('modal-bd').classList.add('open');
   document.body.style.overflow = 'hidden';
 };
-
 window.closeBg = (e) => { if (e.target === document.getElementById('modal-bd')) closeModal(); };
 window.closeModal = () => { document.getElementById('modal-bd').classList.remove('open'); document.body.style.overflow = ''; };
 
@@ -1666,53 +1672,40 @@ function renderPreview() {
 }
 window.removeFile = i => { files.splice(i,1); renderPreview(); };
 
-/* ── 작품 등록 (이 PC에서만) ── */
+/* ── 작품 등록 ── */
 window.submitWork = async () => {
+  if (!checkAdmin()) return;
   const grade = document.getElementById('inp-grade').value;
   const cls   = document.getElementById('inp-class').value;
   const name  = document.getElementById('inp-name').value.trim();
   const title = document.getElementById('inp-title').value.trim();
   if (!grade||!cls||!name||!title) { showToast('학년, 반, 이름, 작품 제목은 필수입니다.'); return; }
 
-  const btn = document.querySelector('.submit-btn');
-  btn.textContent = '등록 중...'; btn.disabled = true;
+  const btns = document.querySelectorAll('.submit-btn');
+  btns.forEach(b => { b.textContent = '등록 중...'; b.disabled = true; });
 
-  const w = {
-    id: Date.now().toString(),
-    sid: document.getElementById('inp-sid').value.trim(),
+  const { error } = await sb.from('works').insert({
+    sid:      document.getElementById('inp-sid').value.trim(),
     grade, cls, name, title,
     question: document.getElementById('inp-question').value.trim(),
-    job:  document.getElementById('inp-job').value.trim(),
-    dept: document.getElementById('inp-dept').value.trim(),
-    univ: document.getElementById('inp-univ').value.trim(),
-    hs:   document.getElementById('inp-hs').value.trim(),
-    imgSrc: files.length ? files[0].src : null,
-  };
-  works.unshift(w);
-  saveLocal();
+    job:      document.getElementById('inp-job').value.trim(),
+    dept:     document.getElementById('inp-dept').value.trim(),
+    univ:     document.getElementById('inp-univ').value.trim(),
+    hs:       document.getElementById('inp-hs').value.trim(),
+    img_src:  files.length ? files[0].src : null,
+    likes:    0,
+  });
 
-  /* 좋아요 초기값 Firebase에 등록 */
-  try { await update(ref(db,'likes'), { [w.id]: 0 }); } catch(e) {}
+  btns.forEach(b => { b.textContent = 'Register Work'; b.disabled = false; });
+
+  if (error) { showToast('❌ 등록 실패: ' + error.message); return; }
 
   ['inp-sid','inp-grade','inp-class','inp-name','inp-title','inp-question','inp-job','inp-dept','inp-univ','inp-hs']
     .forEach(id => { document.getElementById(id).value = ''; });
   files = []; renderPreview(); fi.value = '';
-  btn.textContent = 'Register Work'; btn.disabled = false;
-  renderWorks();
-  showToast('작품이 등록됐습니다!');
+  showToast('✅ 작품이 등록됐습니다!');
   setTimeout(() => document.getElementById('gallery').scrollIntoView({ behavior:'smooth' }), 700);
 };
-
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg; t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 3200);
-}
-
-function esc(s) {
-  if (!s) return '';
-  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
 
 /* ── 라이트박스 ── */
 window.openLightbox = (src, title) => {
@@ -1729,9 +1722,10 @@ window.closeLightbox = () => {
   document.removeEventListener('keydown', document._lbEsc);
 };
 
-/* ── 수정 모달 (이 PC에서만) ── */
+/* ── 수정 모달 ── */
 let editFiles = [];
 window.openEdit = (id) => {
+  if (!checkAdmin()) return;
   const w = works.find(x=>x.id===id); if(!w) return;
   document.getElementById('edit-id').value       = id;
   document.getElementById('edit-sid').value      = w.sid||'';
@@ -1746,8 +1740,8 @@ window.openEdit = (id) => {
   document.getElementById('edit-hs').value       = w.hs||'';
   const ci = document.getElementById('edit-current-img');
   const cb = document.getElementById('edit-img-clear');
-  if (w.imgSrc) { ci.src=w.imgSrc; ci.style.display='block'; cb.style.display='inline-block'; }
-  else          { ci.style.display='none'; cb.style.display='none'; }
+  if (w.img_src) { ci.src=w.img_src; ci.style.display='block'; cb.style.display='inline-block'; }
+  else           { ci.style.display='none'; cb.style.display='none'; }
   editFiles=[];
   document.getElementById('edit-file').value='';
   document.getElementById('edit-bd').classList.add('open');
@@ -1761,34 +1755,34 @@ window.clearEditImg = () => {
   editFiles=[];
 };
 window.saveEdit = async () => {
-  const id=document.getElementById('edit-id').value;
-  const grade=document.getElementById('edit-grade').value;
-  const cls=document.getElementById('edit-class').value;
-  const name=document.getElementById('edit-name').value.trim();
-  const title=document.getElementById('edit-title').value.trim();
+  const id    = document.getElementById('edit-id').value;
+  const grade = document.getElementById('edit-grade').value;
+  const cls   = document.getElementById('edit-class').value;
+  const name  = document.getElementById('edit-name').value.trim();
+  const title = document.getElementById('edit-title').value.trim();
   if(!grade||!cls||!name||!title){showToast('학년, 반, 이름, 작품 제목은 필수입니다.');return;}
-  const w=works.find(x=>x.id===id); if(!w) return;
-  w.sid=document.getElementById('edit-sid').value.trim();
-  w.grade=grade; w.cls=cls; w.name=name; w.title=title;
-  w.question=document.getElementById('edit-question').value.trim();
-  w.job=document.getElementById('edit-job').value.trim();
-  w.dept=document.getElementById('edit-dept').value.trim();
-  w.univ=document.getElementById('edit-univ').value.trim();
-  w.hs=document.getElementById('edit-hs').value.trim();
-  const ci=document.getElementById('edit-current-img');
-  if(editFiles.length>0){w.imgSrc=editFiles[0].src;}
-  else if(ci.style.display==='none'){w.imgSrc=null;}
-  saveLocal(); renderWorks(); closeEdit();
-  showToast('작품이 수정되었습니다.');
+  const ci = document.getElementById('edit-current-img');
+  const updated = {
+    sid: document.getElementById('edit-sid').value.trim(),
+    grade, cls, name, title,
+    question: document.getElementById('edit-question').value.trim(),
+    job:  document.getElementById('edit-job').value.trim(),
+    dept: document.getElementById('edit-dept').value.trim(),
+    univ: document.getElementById('edit-univ').value.trim(),
+    hs:   document.getElementById('edit-hs').value.trim(),
+  };
+  if(editFiles.length>0){ updated.img_src=editFiles[0].src; }
+  else if(ci.style.display==='none'){ updated.img_src=null; }
+  const { error } = await sb.from('works').update(updated).eq('id', id);
+  if(error){ showToast('❌ 수정 실패'); return; }
+  closeEdit(); showToast('✅ 작품이 수정되었습니다.');
 };
 window.deleteWork = async () => {
-  const id=document.getElementById('edit-id').value;
-  if(!confirm('이 작품을 전시에서 삭제하시겠습니까?')) return;
-  works=works.filter(x=>x.id!==id);
-  saveLocal();
-  try { await set(ref(db,`likes/${id}`),null); } catch(e){}
-  renderWorks(); closeEdit();
-  showToast('작품이 삭제되었습니다.');
+  const id = document.getElementById('edit-id').value;
+  if(!confirm('이 작품을 삭제하시겠습니까?')) return;
+  const { error } = await sb.from('works').delete().eq('id', id);
+  if(error){ showToast('❌ 삭제 실패'); return; }
+  closeEdit(); showToast('✅ 작품이 삭제되었습니다.');
 };
 
 const edz=document.getElementById('edit-dz');
@@ -1811,13 +1805,8 @@ function handleEditFiles(flist){
 }
 
 /* ── 수상작 ── */
-let awardWorks  = JSON.parse(localStorage.getItem('award_works_v1') || '[]');
-let awFiles     = [];
+let awFiles = [];
 let selectedAward = { award: '', icon: '' };
-
-function saveAwardLocal() {
-  localStorage.setItem('award_works_v1', JSON.stringify(awardWorks));
-}
 
 window.selectAward = (btn) => {
   document.querySelectorAll('.award-pick-btn').forEach(b => b.classList.remove('selected'));
@@ -1843,13 +1832,13 @@ function renderAwards() {
       ${w.icon ? `<div class="award-badge ${awardBadgeClass(w.award)}">${w.icon}</div>` : ''}
       <div class="award-card-mat">
         <div class="award-thumb">
-          ${w.imgSrc
-            ? `<img src="${w.imgSrc}" alt="${esc(w.title)}">`
+          ${w.img_src
+            ? `<img src="${w.img_src}" alt="${esc(w.title)}">`
             : `<div class="award-thumb-ph"><div style="font-size:28px">◈</div></div>`}
         </div>
       </div>
       <div class="award-body">
-        ${w.award ? `<div style="font-family:var(--fd);font-style:italic;font-size:11px;color:var(--gold);letter-spacing:1.5px;margin-bottom:6px;margin-top:12px;">${w.icon} ${w.award}</div>` : '<div style="margin-top:12px"></div>'}
+        ${w.award ? `<div style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:11px;color:#B8965A;letter-spacing:1.5px;margin-bottom:6px;margin-top:12px;">${w.icon} ${w.award}</div>` : '<div style="margin-top:12px"></div>'}
         <div class="award-title">${esc(w.title)}</div>
         <div class="award-author">${esc(w.name)}${w.sid?' · '+esc(w.sid):''} &nbsp;·&nbsp; ${esc(w.grade)}학년 ${esc(w.cls)}</div>
         ${w.question ? `<div class="award-q"><div class="aq-label">Core Question</div><div class="aq-text">"${esc(w.question)}"</div></div>` : ''}
@@ -1862,7 +1851,7 @@ function renderAwards() {
 
 window.openAwardModal = (id) => {
   const w = awardWorks.find(x => x.id === id); if (!w) return;
-  document.getElementById('am-icon').textContent      = w.icon || '';
+  document.getElementById('am-icon').textContent       = w.icon || '';
   document.getElementById('am-award-name').textContent = w.award || '';
   document.getElementById('am-title').textContent      = w.title;
   document.getElementById('am-author').textContent     = w.name + (w.sid?' · '+w.sid:'') + ' · ' + w.grade + '학년 ' + w.cls;
@@ -1876,17 +1865,14 @@ window.openAwardModal = (id) => {
   document.getElementById('am-careers').innerHTML = cars;
   document.getElementById('am-career-sec').style.display = cars ? '' : 'none';
   const img = document.getElementById('am-img');
-  if (w.imgSrc) {
-    img.src=w.imgSrc; img.style.display='block';
-    img.onclick = () => openLightbox(w.imgSrc, w.title);
-  } else { img.style.display='none'; img.onclick=null; }
+  if (w.img_src) { img.src=w.img_src; img.style.display='block'; img.onclick=()=>openLightbox(w.img_src,w.title); }
+  else { img.style.display='none'; img.onclick=null; }
   document.getElementById('award-modal-bd').classList.add('open');
   document.body.style.overflow='hidden';
 };
 window.closeAwardModalBg = e => { if(e.target===document.getElementById('award-modal-bd')) closeAwardModal(); };
 window.closeAwardModal = () => { document.getElementById('award-modal-bd').classList.remove('open'); document.body.style.overflow=''; };
 
-/* 수상작 파일 */
 const awDz = document.getElementById('aw-drop-zone');
 const awFi = document.getElementById('aw-file-input');
 const awDp = document.getElementById('aw-dz-preview');
@@ -1907,14 +1893,16 @@ function renderAwPreview(){
   awDp.innerHTML=`<div class="dz-thumb"><img src="${awFiles[0].src}"></div>`;
 }
 
-window.submitAward = () => {
+/* ── 수상작 등록 ── */
+window.submitAward = async () => {
+  if (!checkAdmin()) return;
   const name  = document.getElementById('aw-name').value.trim();
   const grade = document.getElementById('aw-grade').value;
   const cls   = document.getElementById('aw-class').value;
   const title = document.getElementById('aw-title').value.trim();
   if (!name||!grade||!cls||!title) { showToast('이름, 학년, 반, 작품 제목은 필수입니다.'); return; }
-  const w = {
-    id: 'aw'+Date.now(),
+
+  const { error } = await sb.from('award_works').insert({
     sid:      document.getElementById('aw-sid').value.trim(),
     name, grade, cls, title,
     question: document.getElementById('aw-question').value.trim(),
@@ -1922,23 +1910,34 @@ window.submitAward = () => {
     dept:     document.getElementById('aw-dept').value.trim(),
     award:    selectedAward.award,
     icon:     selectedAward.icon,
-    imgSrc:   awFiles.length ? awFiles[0].src : null,
-  };
-  awardWorks.unshift(w);
-  saveAwardLocal();
+    img_src:  awFiles.length ? awFiles[0].src : null,
+  });
+
+  if (error) { showToast('❌ 등록 실패: ' + error.message); return; }
+
   ['aw-sid','aw-name','aw-grade','aw-class','aw-title','aw-question','aw-job','aw-dept']
     .forEach(id=>{document.getElementById(id).value='';});
   document.querySelectorAll('.award-pick-btn').forEach(b=>b.classList.remove('selected'));
   selectedAward={award:'',icon:''};
   awFiles=[]; renderAwPreview(); awFi.value='';
-  renderAwards();
-  showToast('수상작이 등록됐습니다!');
+  showToast('✅ 수상작이 등록됐습니다!');
   setTimeout(()=>document.getElementById('awards').scrollIntoView({behavior:'smooth'}),600);
 };
 
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3200);
+}
+
+function esc(s) {
+  if (!s) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
 /* ── 시작 ── */
-renderWorks();
-renderAwards();
+loadWorks();
+loadAwards();
 </script>
 </body>
 </html>
