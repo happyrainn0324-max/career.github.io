@@ -1481,15 +1481,14 @@ footer {
         </div>
       </div>
       <div class="form-group">
-        <label class="form-label">이미지 변경</label>
-        <img class="edit-current-img" id="edit-current-img" src="" alt="" style="display:none">
+        <label class="form-label">이미지 변경 <span style="font-size:11px;color:var(--gold);letter-spacing:1px;">(최대 2장)</span></label>
+        <div id="edit-preview-wrap" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;"></div>
         <div class="edit-dz" id="edit-dz">
-          <input class="edit-dz-input" type="file" id="edit-file" accept="image/*,.pdf">
+          <input class="edit-dz-input" type="file" id="edit-file" accept="image/*,.pdf" multiple>
           <div class="dz-icon">🖼</div>
           <div class="dz-txt">새 이미지로 교체하려면 클릭하거나 드래그</div>
-          <div class="dz-sub">JPG · PNG · PDF · MAX 10MB</div>
+          <div class="dz-sub">JPG · PNG · PDF · MAX 10MB · 최대 2장</div>
         </div>
-        <button class="edit-img-clear" id="edit-img-clear" onclick="clearEditImg()" style="display:none">× 이미지 삭제</button>
       </div>
       <div class="edit-actions">
         <button class="edit-save-btn" onclick="saveEdit()">Save Changes</button>
@@ -1999,14 +1998,18 @@ function openEdit(id) {
   document.getElementById('edit-dept').value     = w.dept||'';
   document.getElementById('edit-univ').value     = w.univ||'';
   document.getElementById('edit-hs').value       = w.hs||'';
-  const ci = document.getElementById('edit-current-img');
-  const cb = document.getElementById('edit-img-clear');
-  const _imgs = getImgs(w);
-  if (_imgs[0]) { ci.src=_imgs[0]; ci.style.display='block'; cb.style.display='inline-block'; }
-  else           { ci.style.display='none'; cb.style.display='none'; }
   editFiles=[];
   const ef = document.getElementById('edit-file');
   if (ef) ef.value='';
+  // 기존 이미지를 DB에서 lazy 로드해서 미리보기
+  renderEditPreview([]);
+  sb.from('works').select('img_src').eq('id', id).single().then(({ data: d }) => {
+    if (!d || !d.img_src) return;
+    const existingImgs = getImgs(d);
+    // 기존 이미지를 URL 형태로 editFiles에 세팅 (file 없음 = 변경 없음)
+    editFiles = existingImgs.map(src => ({ src, file: null }));
+    renderEditPreview(editFiles);
+  });
   document.getElementById('edit-bd').classList.add('open');
   document.body.style.overflow='hidden';
 }
@@ -2017,7 +2020,6 @@ async function saveEdit() {
   const name  = document.getElementById('edit-name').value.trim();
   const title = document.getElementById('edit-title').value.trim();
   if(!grade||!cls||!name||!title){showToast('학년, 반, 이름, 작품 제목은 필수입니다.');return;}
-  const ci = document.getElementById('edit-current-img');
   const updated = {
     sid: document.getElementById('edit-sid').value.trim(),
     grade, cls, name, title,
@@ -2028,10 +2030,13 @@ async function saveEdit() {
     hs:   document.getElementById('edit-hs').value.trim(),
   };
   if(editFiles.length>0){
-    try { updated.img_src = await uploadImg(editFiles[0]); }
-    catch(e) { showToast('❌ 이미지 업로드 실패: '+e.message); return; }
+    try {
+      const urls = await Promise.all(editFiles.map(f => uploadImg(f)));
+      updated.img_src = urls.length === 1 ? urls[0] : JSON.stringify(urls);
+    } catch(e) { showToast('❌ 이미지 업로드 실패: '+e.message); return; }
+  } else {
+    updated.img_src = null;
   }
-  else if(ci.style.display==='none'){ updated.img_src=null; }
   const { error } = await sb.from('works').update(updated).eq('id', id);
   if(error){ showToast('❌ 수정 실패: '+error.message); return; }
   closeEdit(); showToast('✅ 작품이 수정되었습니다.');
@@ -2045,27 +2050,42 @@ async function deleteWork() {
   closeEdit(); showToast('✅ 작품이 삭제되었습니다.');
   await loadWorks();
 }
-function closeEdit() { document.getElementById('edit-bd').classList.remove('open'); document.body.style.overflow=''; editFiles=[]; }
-function clearEditImg() {
-  document.getElementById('edit-current-img').style.display='none';
-  document.getElementById('edit-img-clear').style.display='none';
-  editFiles=[];
-}
+function closeEdit() { document.getElementById('edit-bd').classList.remove('open'); document.body.style.overflow=''; editFiles=[]; renderEditPreview([]); }
+function clearEditImg() { editFiles=[]; renderEditPreview([]); }
 window.openEdit = openEdit; window.saveEdit = saveEdit; window.deleteWork = deleteWork;
 window.closeEdit = closeEdit; window.clearEditImg = clearEditImg;
 window.closeEditBg = e => { if(e.target===document.getElementById('edit-bd')) closeEdit(); };
 
+function renderEditPreview(list) {
+  const wrap = document.getElementById('edit-preview-wrap');
+  if (!wrap) return;
+  if (!list.length) { wrap.innerHTML = ''; return; }
+  wrap.innerHTML = list.map((f, i) => `
+    <div style="position:relative;display:inline-block;">
+      <img src="${f.src}" style="width:120px;height:90px;object-fit:cover;border:1px solid rgba(212,196,173,0.2);">
+      <button onclick="removeEditFile(${i})" style="position:absolute;top:3px;right:3px;background:rgba(44,40,32,0.75);color:var(--cream);border:none;border-radius:50%;width:20px;height:20px;font-size:11px;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>
+    </div>`).join('');
+}
+function removeEditFile(i) { editFiles.splice(i,1); renderEditPreview(editFiles); }
+window.removeEditFile = removeEditFile;
+
 function handleEditFiles(flist){
-  const f=flist[0]; if(!f) return;
-  if(f.size>10*1024*1024){showToast('파일 크기는 10MB 이하여야 합니다.');return;}
-  const r=new FileReader();
-  r.onload=ev=>{
-    editFiles=[{src:ev.target.result, file:f}];
-    const ci=document.getElementById('edit-current-img');
-    ci.src=ev.target.result; ci.style.display='block';
-    document.getElementById('edit-img-clear').style.display='inline-block';
-  };
-  r.readAsDataURL(f);
+  const newFiles = Array.from(flist);
+  const remaining = 2 - editFiles.length;
+  if (remaining <= 0) { showToast('이미지는 최대 2장까지 업로드할 수 있습니다.'); return; }
+  const toAdd = newFiles.slice(0, remaining);
+  if (newFiles.length > remaining) showToast('최대 2장까지만 업로드됩니다.');
+  let loaded = 0;
+  toAdd.forEach(f => {
+    if(f.size>10*1024*1024){showToast('파일 크기는 10MB 이하여야 합니다.');return;}
+    const r=new FileReader();
+    r.onload=ev=>{
+      editFiles.push({src:ev.target.result, file:f});
+      loaded++;
+      if(loaded===toAdd.length) renderEditPreview(editFiles);
+    };
+    r.readAsDataURL(f);
+  });
 }
 
 /* ── 수상작 등록 ── */
