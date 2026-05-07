@@ -1339,7 +1339,10 @@ footer {
       </div>
       <button class="modal-close" onclick="closeModal()">✕</button>
     </div>
-    <img class="m-img" id="m-img" src="" alt="" style="display:none">
+    <div id="m-img-wrap">
+      <img class="m-img" id="m-img" src="" alt="" style="display:none">
+      <img class="m-img" id="m-img2" src="" alt="" style="display:none;margin-top:8px">
+    </div>
     <div class="modal-body">
       <div class="m-section" id="m-q-sec">
         <div class="m-section-en">Core Question</div>
@@ -1707,9 +1710,12 @@ function openModal(id) {
   document.getElementById('m-careers').innerHTML = cars;
   document.getElementById('m-career-sec').style.display = cars ? '' : 'none';
   const img = document.getElementById('m-img');
+  const img2 = document.getElementById('m-img2');
   const imgs = getImgs(w);
-  if (imgs[0]) { img.src = imgs[0]; img.style.display = 'block'; img.onclick = () => openLightbox(imgs[0], w.title); }
-  else { img.style.display = 'none'; img.onclick = null; }
+  if (imgs[0]) { img.src=imgs[0]; img.style.display='block'; img.style.cursor='zoom-in'; img.onclick=()=>openLightbox(imgs[0],w.title); }
+  else { img.style.display='none'; img.onclick=null; }
+  if (imgs[1]) { img2.src=imgs[1]; img2.style.display='block'; img2.style.cursor='zoom-in'; img2.onclick=()=>openLightbox(imgs[1],w.title); }
+  else { img2.style.display='none'; img2.onclick=null; }
   document.getElementById('modal-bd').classList.add('open');
   document.body.style.overflow = 'hidden';
 }
