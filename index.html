@@ -1150,12 +1150,12 @@ footer {
             </div>
           </div>
           <div class="form-group">
-            <label class="form-label">수상작 이미지 업로드</label>
+            <label class="form-label">수상작 이미지 업로드 <span style="font-size:11px;color:var(--gold);font-weight:400;letter-spacing:1px;">(최대 2장)</span></label>
             <div class="drop-zone" id="aw-drop-zone">
-              <input class="dz-input" type="file" id="aw-file-input" accept="image/*,.pdf">
+              <input class="dz-input" type="file" id="aw-file-input" accept="image/*,.pdf" multiple>
               <div class="dz-icon">🏆</div>
               <div class="dz-txt">Click or drag to upload</div>
-              <div class="dz-sub">JPG · PNG · PDF · MAX 10MB</div>
+              <div class="dz-sub">JPG · PNG · PDF · MAX 10MB · 최대 2장</div>
             </div>
             <div class="dz-preview" id="aw-dz-preview"></div>
           </div>
@@ -1369,7 +1369,10 @@ footer {
       </div>
       <button class="am-close" onclick="closeAwardModal()">✕</button>
     </div>
-    <img class="am-img" id="am-img" src="" alt="" style="display:none">
+    <div id="am-img-wrap" style="display:none">
+      <img class="am-img" id="am-img" src="" alt="" style="display:none">
+      <img class="am-img" id="am-img2" src="" alt="" style="display:none;margin-top:8px">
+    </div>
     <div class="am-body">
       <div class="am-section" id="am-q-sec">
         <div class="am-section-label">Core Question</div>
@@ -1721,8 +1724,20 @@ function openAwardModal(id) {
   document.getElementById('am-careers').innerHTML = cars;
   document.getElementById('am-career-sec').style.display = cars ? '' : 'none';
   const img = document.getElementById('am-img');
-  if (w.img_src) { img.src=w.img_src; img.style.display='block'; img.onclick=()=>openLightbox(w.img_src,w.title); }
-  else { img.style.display='none'; img.onclick=null; }
+  const img2 = document.getElementById('am-img2');
+  const wrap = document.getElementById('am-img-wrap');
+  if (w.img_src) {
+    img.src=w.img_src; img.style.display='block';
+    img.style.cursor='zoom-in';
+    img.onclick=()=>openLightbox(w.img_src,w.title);
+    wrap.style.display='block';
+  } else { img.style.display='none'; img.onclick=null; wrap.style.display='none'; }
+  if (w.img_src2) {
+    img2.src=w.img_src2; img2.style.display='block';
+    img2.style.cursor='zoom-in';
+    img2.onclick=()=>openLightbox(w.img_src2,w.title);
+    wrap.style.display='block';
+  } else { img2.style.display='none'; img2.onclick=null; }
   document.getElementById('award-modal-bd').classList.add('open');
   document.body.style.overflow='hidden';
 }
@@ -1914,6 +1929,7 @@ async function submitAward() {
     award:    selectedAward.award || null,
     icon:     selectedAward.icon  || null,
     img_src:  awFiles.length ? awFiles[0].src : null,
+    img_src2: awFiles.length > 1 ? awFiles[1].src : null,
     likes:    0,
   }]);
 
@@ -1934,18 +1950,38 @@ async function submitAward() {
 window.submitAward = submitAward;
 
 function handleAwFiles(flist) {
-  const f=flist[0]; if(!f) return;
-  if(f.size>10*1024*1024){showToast('파일 크기는 10MB 이하여야 합니다.');return;}
-  const r=new FileReader();
-  r.onload=ev=>{awFiles=[{src:ev.target.result}];renderAwPreview();};
-  r.readAsDataURL(f);
+  const newFiles = Array.from(flist);
+  const remaining = 2 - awFiles.length;
+  if (remaining <= 0) { showToast('이미지는 최대 2장까지 업로드할 수 있습니다.'); return; }
+  const toAdd = newFiles.slice(0, remaining);
+  if (newFiles.length > remaining) showToast(`최대 2장까지만 업로드됩니다. ${toAdd.length}장만 추가했습니다.`);
+  let loaded = 0;
+  toAdd.forEach(f => {
+    if(f.size>10*1024*1024){showToast('파일 크기는 10MB 이하여야 합니다.');return;}
+    const r=new FileReader();
+    r.onload=ev=>{
+      awFiles.push({src:ev.target.result});
+      loaded++;
+      if(loaded===toAdd.length) renderAwPreview();
+    };
+    r.readAsDataURL(f);
+  });
 }
+function removeAwFile(idx) {
+  awFiles.splice(idx, 1);
+  renderAwPreview();
+}
+window.removeAwFile = removeAwFile;
 function renderAwPreview(){
   const awDp = document.getElementById('aw-dz-preview');
   if (!awDp) return;
   if(!awFiles.length){awDp.classList.remove('show');awDp.innerHTML='';return;}
   awDp.classList.add('show');
-  awDp.innerHTML=`<div class="dz-thumb"><img src="${awFiles[0].src}"></div>`;
+  awDp.innerHTML = awFiles.map((f,i)=>`
+    <div class="dz-thumb" style="position:relative;display:inline-block;">
+      <img src="${f.src}">
+      <button onclick="removeAwFile(${i})" style="position:absolute;top:4px;right:4px;background:rgba(44,40,32,0.75);color:var(--cream);border:none;border-radius:50%;width:22px;height:22px;font-size:12px;cursor:pointer;line-height:1;display:flex;align-items:center;justify-content:center;" title="삭제">✕</button>
+    </div>`).join('');
 }
 
 /* ── 이벤트 리스너 연결 (DOM 로드 후) ── */
