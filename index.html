@@ -1778,7 +1778,7 @@ function makeAwardCard(w, i, prefix='aw') {
       <div class="award-body">
         ${w.award ? `<div style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:11px;color:#B8965A;letter-spacing:1.5px;margin-bottom:6px;margin-top:12px;">${w.icon} ${w.award}</div>` : '<div style="margin-top:12px"></div>'}
         <div class="award-title">${esc(w.title)}</div>
-        <div class="award-author">${esc(w.name)}${w.sid?' · '+esc(w.sid):''} &nbsp;·&nbsp; ${esc(w.grade)}학년 ${esc(w.cls)}</div>
+        <div class="award-author">${esc(w.name)}${w.sid?' · '+esc(w.sid):''}</div>
         ${w.question ? `<div class="award-q"><div class="aq-label">Core Question</div><div class="aq-text">"${esc(w.question)}"</div></div>` : ''}
         ${(w.job||w.dept) ? `<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;justify-content:flex-end;">
           ${w.job  ? `<div class="award-career-tag">${esc(w.job)}</div>`  : ''}
