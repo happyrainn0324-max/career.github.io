@@ -260,6 +260,20 @@ nav {
 .filter-btn.active {
   background: var(--charcoal); color: var(--cream); border-color: var(--charcoal); z-index: 2;
 }
+/* 수상작 섹션 전용 필터 — 금색 스타일 */
+.award-filter-btn {
+  font-family: var(--fk); font-size: 13px; font-weight: 500;
+  color: var(--charcoal); background: transparent;
+  border: 1px solid var(--gold-l);
+  padding: 6px 18px; cursor: pointer;
+  transition: all 0.2s; margin-left: -1px;
+  letter-spacing: 1px;
+}
+.award-filter-btn:first-child { margin-left: 0; }
+.award-filter-btn:hover { background: rgba(184,150,90,0.15); border-color: var(--gold); color: var(--gold); z-index: 1; }
+.award-filter-btn.active {
+  background: var(--gold); color: var(--charcoal); border-color: var(--gold); z-index: 2; font-weight: 700;
+}
 
 /* masonry-style grid */
 .work-grid {
@@ -355,6 +369,12 @@ nav {
   font-family: var(--fd); font-size: 12px; font-style: italic;
   color: var(--ink-mid); border: 1px solid var(--ink-ll);
   padding: 3px 10px; background: var(--cream);
+}
+.award-career-tag {
+  font-family: var(--fk); font-size: 12px; font-weight: 500;
+  color: var(--charcoal); letter-spacing: 0.5px;
+  border: 1px solid var(--gold);
+  padding: 4px 12px; background: var(--gold-ll);
 }
 
 /* card footer */
@@ -885,7 +905,7 @@ footer {
   color: var(--cream); margin-bottom: 4px;
 }
 .award-author {
-  font-family: var(--fd); font-style: italic; font-size: 12px;
+  font-family: var(--fd); font-style: italic; font-size: 15px;
   color: var(--ink-l); margin-bottom: 10px;
 }
 .award-q {
@@ -992,7 +1012,7 @@ footer {
     </div>
     <div class="nav-rule"></div>
     <ul class="nav-links">
-      <li><a href="#awards" onclick="event.preventDefault();document.getElementById('awards').scrollIntoView({behavior:'smooth'})">Exhibition</a></li>
+      <li><a href="#awards" onclick="event.preventDefault();document.getElementById('all-awards').scrollIntoView({behavior:'smooth'})">Exhibition</a></li>
     </ul>
     <a href="#upload" class="nav-upload-btn" id="nav-upload-btn" style="display:none;">작품 등록</a>
     <button onclick="checkAdmin()" style="font-family:var(--fk);font-size:12px;color:var(--ink-mid);background:transparent;border:1px solid var(--ink-ll);padding:6px 16px;cursor:pointer;letter-spacing:1px;margin-left:12px;transition:all 0.2s;" onmouseover="this.style.borderColor='var(--gold)';this.style.color='var(--gold)'" onmouseout="this.style.borderColor='var(--ink-ll)';this.style.color='var(--ink-mid)'">관리자</button>
@@ -1033,9 +1053,9 @@ footer {
     </div>
     <div class="hero-btn-row">
       <button class="award-goto-btn" onclick="document.getElementById('awards').scrollIntoView({behavior:'smooth'})">
-        수상작 보기
+        최우수상작 보기
       </button>
-      <div class="hero-scroll-hint" onclick="document.getElementById('awards').scrollIntoView({behavior:'smooth'})">
+      <div class="hero-scroll-hint" onclick="document.getElementById('all-awards').scrollIntoView({behavior:'smooth'})">
         <span class="hs-text">View Exhibition</span>
         <span class="hs-arrow">↓</span>
       </div>
@@ -1044,32 +1064,47 @@ footer {
 </section>
 
 <!-- GALLERY -->
-<!-- AWARDS -->
-<section class="award-sec" id="awards">
-  <div class="award-con">
-    <div class="award-header">
-      <div class="award-header-left">
+<!-- ALL AWARDS (밝은 배경) -->
+<section class="gallery-sec" id="all-awards">
+  <div class="gallery-con">
+    <div class="gallery-header">
+      <div class="gallery-header-left">
         <span class="gh-label">Total Works</span>
         <span class="gh-count" id="gallery-count">0</span>
       </div>
-      <div class="award-header-center">
-        <div class="award-header-en"><em>Award</em> Winners</div>
-        <div class="award-header-kr">수상작 전시</div>
+      <div class="gallery-header-center">
+        <div class="gh-en">Award Exhibition</div>
       </div>
-      <div class="award-header-right">
+      <div class="gallery-header-right">
         <span class="gh-filter-label">Filter by Grade</span>
         <div class="filter-row">
-          <button class="filter-btn active" onclick="filterAwards('all',this)">All</button>
-          <button class="filter-btn" onclick="filterAwards('1',this)">1학년</button>
-          <button class="filter-btn" onclick="filterAwards('2',this)">2학년</button>
-          <button class="filter-btn" onclick="filterAwards('3',this)">3학년</button>
+          <button class="award-filter-btn active" onclick="filterAwards('all',this)">All</button>
+          <button class="award-filter-btn" onclick="filterAwards('1',this)">1학년</button>
+          <button class="award-filter-btn" onclick="filterAwards('2',this)">2학년</button>
+          <button class="award-filter-btn" onclick="filterAwards('3',this)">3학년</button>
         </div>
       </div>
+    </div>
+    <div class="work-grid" id="all-award-grid">
+      <div class="empty-state"><div class="es-en">No awards yet</div><div class="es-kr">수상작이 아직 등록되지 않았습니다.</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- TOP AWARDS (검정 배경 — 최우수상만) -->
+<section class="award-sec" id="awards">
+  <div class="award-con">
+    <div class="award-header">
+      <div class="award-header-left"></div>
+      <div class="award-header-center">
+        <div class="award-header-en"><em>Best</em> Award Exhibition</div>
+      </div>
+      <div class="award-header-right"></div>
     </div>
     <div class="award-grid" id="award-grid">
       <div class="award-empty">
         <div class="ae-en">No awards yet</div>
-        <div class="ae-kr">수상작이 아직 등록되지 않았습니다.</div>
+        <div class="ae-kr">최우수상 작품이 아직 없습니다.</div>
       </div>
     </div>
 
@@ -1728,17 +1763,10 @@ function renderWorks(append = false) {
   }
 }
 
-/* ── 수상작 섹션 렌더링 (award 있는 것만) ── */
+/* ── 수상작 카드 HTML 생성 헬퍼 ── */
 let awardWorks = [];
-function renderAwards() {
-  const grid = document.getElementById('award-grid');
-  if (!grid) return;
-  const filteredAwards = awardFilter === 'all' ? awardWorks : awardWorks.filter(w => w.grade === awardFilter);
-  if (!filteredAwards.length) {
-    grid.innerHTML = `<div class="award-empty"><div class="ae-en">No awards yet</div><div class="ae-kr">해당 학년 수상작이 없습니다.</div></div>`;
-    return;
-  }
-  grid.innerHTML = filteredAwards.map((w, i) => `
+function makeAwardCard(w, i) {
+  return `
     <div class="award-card" style="animation-delay:${i*0.06}s">
       ${w.icon ? `<div class="award-badge ${awardBadgeClass(w.award)}">${w.icon}</div>` : ''}
       <div class="award-card-mat">
@@ -1752,17 +1780,18 @@ function renderAwards() {
         <div class="award-author">${esc(w.name)}${w.sid?' · '+esc(w.sid):''} &nbsp;·&nbsp; ${esc(w.grade)}학년 ${esc(w.cls)}</div>
         ${w.question ? `<div class="award-q"><div class="aq-label">Core Question</div><div class="aq-text">"${esc(w.question)}"</div></div>` : ''}
         ${(w.job||w.dept) ? `<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;">
-          ${w.job  ? `<div class="career-tag">${esc(w.job)}</div>`  : ''}
-          ${w.dept ? `<div class="career-tag">${esc(w.dept)}</div>` : ''}
+          ${w.job  ? `<div class="award-career-tag">${esc(w.job)}</div>`  : ''}
+          ${w.dept ? `<div class="award-career-tag">${esc(w.dept)}</div>` : ''}
         </div>` : ''}
       </div>
       <div class="award-footer">
         <button class="award-detail-btn" onclick="openAwardModal('${w.id}')">자세히 보기 →</button>
       </div>
-    </div>`).join('');
+    </div>`;
+}
 
-  // 수상작 썸네일 lazy 로드 (개별 fetch)
-  filteredAwards.forEach(w => {
+function lazyLoadThumbs(list) {
+  list.forEach(w => {
     sb.from('works').select('img_src').eq('id', w.id).single().then(({ data: d }) => {
       if (!d) return;
       const src = getImgs(d)[0];
@@ -1773,10 +1802,40 @@ function renderAwards() {
   });
 }
 
+function renderAwards() {
+  // ① 전체 수상작 (밝은 배경) — 필터 적용
+  const allGrid = document.getElementById('all-award-grid');
+  if (allGrid) {
+    const filtered = awardFilter === 'all' ? awardWorks : awardWorks.filter(w => w.grade === awardFilter);
+    if (!filtered.length) {
+      allGrid.innerHTML = `<div class="empty-state"><div class="es-en">No awards yet</div><div class="es-kr">해당 학년 수상작이 없습니다.</div></div>`;
+    } else {
+      allGrid.innerHTML = filtered.map((w, i) => makeAwardCard(w, i)).join('');
+      lazyLoadThumbs(filtered);
+    }
+  }
+
+  // ② 최우수상만 (검정 배경)
+  const topGrid = document.getElementById('award-grid');
+  if (topGrid) {
+    const topList = awardWorks.filter(w => w.award === '최우수상');
+    if (!topList.length) {
+      topGrid.innerHTML = `<div class="award-empty"><div class="ae-en">No awards yet</div><div class="ae-kr">최우수상 작품이 아직 없습니다.</div></div>`;
+    } else {
+      topGrid.innerHTML = topList.map((w, i) => makeAwardCard(w, i)).join('');
+      lazyLoadThumbs(topList);
+    }
+  }
+
+  // 총 수상작 수 업데이트
+  const gc = document.getElementById('gallery-count');
+  if (gc) gc.textContent = awardWorks.length;
+}
+
 let awardFilter = 'all';
 function filterAwards(g, btn) {
   awardFilter = g;
-  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.award-filter-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   renderAwards();
 }
