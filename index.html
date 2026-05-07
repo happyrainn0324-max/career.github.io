@@ -1687,10 +1687,8 @@ function renderWorks(append = false) {
       ${medalBadge}
       <div class="work-card-accent ${g.accClass}"></div>
       <div class="work-card-mat">
-        <div class="work-thumb">
-          ${getImgs(w)[0]
-            ? `<img src="${getImgs(w)[0]}" alt="${esc(w.title)}">`
-            : `<div class="work-thumb-ph"><div style="font-size:28px;opacity:0.25">◈</div><div class="wt-en">No Image</div></div>`}
+        <div class="work-thumb" id="thumb-${w.id}">
+          <div class="work-thumb-ph"><div style="font-size:28px;opacity:0.25">◈</div><div class="wt-en">No Image</div></div>
         </div>
       </div>
       <div class="work-body">
@@ -1724,6 +1722,21 @@ function renderWorks(append = false) {
     grid.innerHTML = newCards;
   }
 
+  // 카드 썸네일 이미지 lazy batch 로드
+  const visibleWorks = works.slice(startIdx);
+  if (visibleWorks.length) {
+    const ids = visibleWorks.map(w => w.id);
+    sb.from('works').select('id,img_src').in('id', ids).then(({ data: imgData }) => {
+      if (!imgData) return;
+      imgData.forEach(row => {
+        const thumb = document.getElementById('thumb-' + row.id);
+        if (!thumb) return;
+        const src = getImgs(row)[0];
+        if (src) thumb.innerHTML = `<img src="${src}" alt="">`;
+      });
+    });
+  }
+
   // 더 보기 버튼 표시 여부
   const wrap = document.getElementById('load-more-wrap');
   const info = document.getElementById('load-more-info');
@@ -1748,8 +1761,8 @@ function renderAwards() {
     <div class="award-card" style="animation-delay:${i*0.06}s">
       ${w.icon ? `<div class="award-badge ${awardBadgeClass(w.award)}">${w.icon}</div>` : ''}
       <div class="award-card-mat">
-        <div class="award-thumb">
-          ${getImgs(w)[0] ? `<img src="${getImgs(w)[0]}" alt="${esc(w.title)}">` : `<div class="award-thumb-ph"><div style="font-size:28px">◈</div></div>`}
+        <div class="award-thumb" id="aw-thumb-${w.id}">
+          <div class="award-thumb-ph"><div style="font-size:28px">◈</div></div>
         </div>
       </div>
       <div class="award-body">
@@ -1762,6 +1775,20 @@ function renderAwards() {
         <button class="award-detail-btn" onclick="openAwardModal('${w.id}')">View details →</button>
       </div>
     </div>`).join('');
+
+  // 수상작 썸네일 lazy batch 로드
+  if (awardWorks.length) {
+    const ids = awardWorks.map(w => w.id);
+    sb.from('works').select('id,img_src').in('id', ids).then(({ data: imgData }) => {
+      if (!imgData) return;
+      imgData.forEach(row => {
+        const thumb = document.getElementById('aw-thumb-' + row.id);
+        if (!thumb) return;
+        const src = getImgs(row)[0];
+        if (src) thumb.innerHTML = `<img src="${src}" alt="" style="width:100%;height:100%;object-fit:cover;">`;
+      });
+    });
+  }
 }
 
 function awardBadgeClass(award) {
