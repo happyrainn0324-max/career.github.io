@@ -1554,6 +1554,15 @@ async function loadWorks() {
   } catch(e) { console.error(e); }
 }
 
+/* img_src 파싱 헬퍼 — JSON 배열이면 배열, 단일 문자열이면 [str], null이면 [] */
+function getImgs(w) {
+  if (!w.img_src) return [];
+  try {
+    const parsed = JSON.parse(w.img_src);
+    return Array.isArray(parsed) ? parsed : [w.img_src];
+  } catch { return [w.img_src]; }
+}
+
 /* ── 실시간 구독 ── */
 sb.channel('works-realtime')
   .on('postgres_changes', { event: '*', schema: 'public', table: 'works' }, () => loadWorks())
@@ -1589,8 +1598,8 @@ function renderWorks() {
       <div class="work-card-accent ${g.accClass}"></div>
       <div class="work-card-mat">
         <div class="work-thumb">
-          ${w.img_src
-            ? `<img src="${w.img_src}" alt="${esc(w.title)}">`
+          ${getImgs(w)[0]
+            ? `<img src="${getImgs(w)[0]}" alt="${esc(w.title)}">`
             : `<div class="work-thumb-ph"><div style="font-size:28px;opacity:0.25">◈</div><div class="wt-en">No Image</div></div>`}
         </div>
       </div>
@@ -1634,7 +1643,7 @@ function renderAwards() {
       ${w.icon ? `<div class="award-badge ${awardBadgeClass(w.award)}">${w.icon}</div>` : ''}
       <div class="award-card-mat">
         <div class="award-thumb">
-          ${w.img_src ? `<img src="${w.img_src}" alt="${esc(w.title)}">` : `<div class="award-thumb-ph"><div style="font-size:28px">◈</div></div>`}
+          ${getImgs(w)[0] ? `<img src="${getImgs(w)[0]}" alt="${esc(w.title)}">` : `<div class="award-thumb-ph"><div style="font-size:28px">◈</div></div>`}
         </div>
       </div>
       <div class="award-body">
@@ -1698,7 +1707,8 @@ function openModal(id) {
   document.getElementById('m-careers').innerHTML = cars;
   document.getElementById('m-career-sec').style.display = cars ? '' : 'none';
   const img = document.getElementById('m-img');
-  if (w.img_src) { img.src = w.img_src; img.style.display = 'block'; img.onclick = () => openLightbox(w.img_src, w.title); }
+  const imgs = getImgs(w);
+  if (imgs[0]) { img.src = imgs[0]; img.style.display = 'block'; img.onclick = () => openLightbox(imgs[0], w.title); }
   else { img.style.display = 'none'; img.onclick = null; }
   document.getElementById('modal-bd').classList.add('open');
   document.body.style.overflow = 'hidden';
@@ -1726,16 +1736,17 @@ function openAwardModal(id) {
   const img = document.getElementById('am-img');
   const img2 = document.getElementById('am-img2');
   const wrap = document.getElementById('am-img-wrap');
-  if (w.img_src) {
-    img.src=w.img_src; img.style.display='block';
+  const imgs = getImgs(w);
+  if (imgs[0]) {
+    img.src=imgs[0]; img.style.display='block';
     img.style.cursor='zoom-in';
-    img.onclick=()=>openLightbox(w.img_src,w.title);
+    img.onclick=()=>openLightbox(imgs[0],w.title);
     wrap.style.display='block';
   } else { img.style.display='none'; img.onclick=null; wrap.style.display='none'; }
-  if (w.img_src2) {
-    img2.src=w.img_src2; img2.style.display='block';
+  if (imgs[1]) {
+    img2.src=imgs[1]; img2.style.display='block';
     img2.style.cursor='zoom-in';
-    img2.onclick=()=>openLightbox(w.img_src2,w.title);
+    img2.onclick=()=>openLightbox(imgs[1],w.title);
     wrap.style.display='block';
   } else { img2.style.display='none'; img2.onclick=null; }
   document.getElementById('award-modal-bd').classList.add('open');
@@ -1838,7 +1849,8 @@ function openEdit(id) {
   document.getElementById('edit-hs').value       = w.hs||'';
   const ci = document.getElementById('edit-current-img');
   const cb = document.getElementById('edit-img-clear');
-  if (w.img_src) { ci.src=w.img_src; ci.style.display='block'; cb.style.display='inline-block'; }
+  const _imgs = getImgs(w);
+  if (_imgs[0]) { ci.src=_imgs[0]; ci.style.display='block'; cb.style.display='inline-block'; }
   else           { ci.style.display='none'; cb.style.display='none'; }
   editFiles=[];
   const ef = document.getElementById('edit-file');
@@ -1928,8 +1940,7 @@ async function submitAward() {
     dept:     document.getElementById('aw-dept').value.trim(),
     award:    selectedAward.award || null,
     icon:     selectedAward.icon  || null,
-    img_src:  awFiles.length ? awFiles[0].src : null,
-    img_src2: awFiles.length > 1 ? awFiles[1].src : null,
+    img_src:  awFiles.length ? JSON.stringify(awFiles.map(f=>f.src)) : null,
     likes:    0,
   }]);
 
