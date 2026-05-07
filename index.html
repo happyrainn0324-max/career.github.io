@@ -878,10 +878,10 @@ footer {
 .award-card {
   break-inside: avoid; margin-bottom: 28px;
   background: rgba(247,243,236,0.05);
-  border: 2px solid rgba(184,150,90,0.6);
+  border: 2px solid rgba(184,150,90,0.35);
   position: relative; transition: all 0.25s; cursor: pointer;
   animation: cardReveal 0.6s ease both;
-  box-shadow: 0 4px 20px rgba(184,150,90,0.1);
+  box-shadow: 0 4px 20px rgba(184,150,90,0.06);
 }
 .award-card:hover {
   transform: translateY(-6px);
@@ -1777,8 +1777,8 @@ function makeAwardCard(w, i, prefix='aw') {
       </div>
       <div class="award-body">
         ${w.award ? `<div style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:11px;color:#B8965A;letter-spacing:1.5px;margin-bottom:6px;margin-top:12px;">${w.icon} ${w.award}</div>` : '<div style="margin-top:12px"></div>'}
-        <div class="award-title">${esc(w.title)}</div>
-        <div class="award-author">${esc(w.name)}${w.sid?' · '+esc(w.sid):''}</div>
+        <div class="award-title" style="${prefix==='all'?'color:var(--charcoal)':''}">${esc(w.title)}</div>
+        <div class="award-author" style="${prefix==='all'?'color:var(--ink-mid)':''}">${esc(w.name)}${w.sid?` · <span style="font-size:17px;">${esc(w.sid)}</span>`:''}</div>
         ${w.question ? `<div class="award-q"><div class="aq-label">Core Question</div><div class="aq-text">"${esc(w.question)}"</div></div>` : ''}
         ${(w.job||w.dept) ? `<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;justify-content:flex-end;">
           ${w.job  ? `<div class="award-career-tag">${esc(w.job)}</div>`  : ''}
