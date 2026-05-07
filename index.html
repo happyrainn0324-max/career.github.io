@@ -923,7 +923,7 @@ footer {
 }
 .award-footer {
   border-top: 1px solid rgba(212,196,173,0.1); padding: 8px 14px 12px;
-  display: flex; justify-content: flex-end;
+  display: flex; justify-content: space-between; align-items: center;
 }
 .award-detail-btn {
   font-family: var(--fd); font-style: italic; font-size: 12px;
@@ -1786,7 +1786,7 @@ function makeAwardCard(w, i, prefix='aw') {
         </div>` : ''}
       </div>
       <div class="award-footer" style="display:flex;align-items:center;justify-content:space-between;">
-        <button class="edit-btn" onclick="openEdit('${w.id}')">EDIT</button>
+        <button class="edit-btn" onclick="openEdit('${w.id}')" style="color:var(--ink-mid);border-color:rgba(212,196,173,0.4);">EDIT</button>
         <button class="award-detail-btn" onclick="openAwardModal('${w.id}')">자세히 보기 →</button>
       </div>
     </div>`;
