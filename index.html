@@ -1575,13 +1575,16 @@ async function loadWorks() {
   document.getElementById('load-more-wrap').style.display = 'none';
 
   try {
-    // 수상작은 전체 로드 (보통 소수)
+    // img_src 제외하고 로드 — base64 데이터 timeout 방지, 이미지는 모달 열 때 lazy 로드
+    const FIELDS = 'id,sid,name,grade,cls,title,question,job,dept,univ,hs,award,icon,likes,created_at';
+
+    // 수상작은 전체 로드 (소수)
     const { data: awardData, error: awardErr } = await sb.from('works')
-      .select('*').not('award','is',null).neq('award','').order('created_at', { ascending: false });
+      .select(FIELDS).not('award','is',null).neq('award','').order('created_at', { ascending: false });
     if (awardErr) throw awardErr;
 
     // 갤러리 첫 페이지 + 전체 카운트
-    let query = sb.from('works').select('*', { count: 'exact' }).order('created_at', { ascending: false });
+    let query = sb.from('works').select(FIELDS, { count: 'exact' }).order('created_at', { ascending: false });
     if (filter !== 'all') query = query.eq('grade', filter);
     const { data, error, count } = await query.range(0, PAGE_SIZE - 1);
     if (error) throw error;
@@ -1611,7 +1614,8 @@ async function loadMoreWorks() {
   const to   = from + PAGE_SIZE - 1;
 
   try {
-    let query = sb.from('works').select('*').order('created_at', { ascending: false });
+    const FIELDS = 'id,sid,name,grade,cls,title,question,job,dept,univ,hs,award,icon,likes,created_at';
+    let query = sb.from('works').select(FIELDS).order('created_at', { ascending: false });
     if (filter !== 'all') query = query.eq('grade', filter);
     const { data, error } = await query.range(from, to);
     if (error) throw error;
@@ -1781,7 +1785,8 @@ async function filterWorks(g, btn) {
   document.getElementById('gallery-loading').style.display = 'block';
 
   try {
-    let query = sb.from('works').select('*', { count: 'exact' }).order('created_at', { ascending: false });
+    const FIELDS = 'id,sid,name,grade,cls,title,question,job,dept,univ,hs,award,icon,likes,created_at';
+    let query = sb.from('works').select(FIELDS, { count: 'exact' }).order('created_at', { ascending: false });
     if (filter !== 'all') query = query.eq('grade', filter);
     const { data, error, count } = await query.range(0, PAGE_SIZE - 1);
     if (error) throw error;
@@ -1830,11 +1835,14 @@ function openModal(id) {
   document.getElementById('m-career-sec').style.display = cars ? '' : 'none';
   const img = document.getElementById('m-img');
   const img2 = document.getElementById('m-img2');
-  const imgs = getImgs(w);
-  if (imgs[0]) { img.src=imgs[0]; img.style.display='block'; img.style.cursor='zoom-in'; img.onclick=()=>openLightbox(imgs[0],w.title); }
-  else { img.style.display='none'; img.onclick=null; }
-  if (imgs[1]) { img2.src=imgs[1]; img2.style.display='block'; img2.style.cursor='zoom-in'; img2.onclick=()=>openLightbox(imgs[1],w.title); }
-  else { img2.style.display='none'; img2.onclick=null; }
+  img.style.display='none'; img2.style.display='none';
+  // img_src는 목록에서 제외됐으므로 DB에서 lazy 로드
+  sb.from('works').select('img_src').eq('id', id).single().then(({ data: d }) => {
+    if (!d) return;
+    const imgs = getImgs(d);
+    if (imgs[0]) { img.src=imgs[0]; img.style.display='block'; img.style.cursor='zoom-in'; img.onclick=()=>openLightbox(imgs[0],w.title); }
+    if (imgs[1]) { img2.src=imgs[1]; img2.style.display='block'; img2.style.cursor='zoom-in'; img2.onclick=()=>openLightbox(imgs[1],w.title); }
+  });
   document.getElementById('modal-bd').classList.add('open');
   document.body.style.overflow = 'hidden';
 }
@@ -1861,19 +1869,24 @@ function openAwardModal(id) {
   const img = document.getElementById('am-img');
   const img2 = document.getElementById('am-img2');
   const wrap = document.getElementById('am-img-wrap');
-  const imgs = getImgs(w);
-  if (imgs[0]) {
-    img.src=imgs[0]; img.style.display='block';
-    img.style.cursor='zoom-in';
-    img.onclick=()=>openLightbox(imgs[0],w.title);
-    wrap.style.display='block';
-  } else { img.style.display='none'; img.onclick=null; wrap.style.display='none'; }
-  if (imgs[1]) {
-    img2.src=imgs[1]; img2.style.display='block';
-    img2.style.cursor='zoom-in';
-    img2.onclick=()=>openLightbox(imgs[1],w.title);
-    wrap.style.display='block';
-  } else { img2.style.display='none'; img2.onclick=null; }
+  img.style.display='none'; img2.style.display='none'; wrap.style.display='none';
+  // img_src lazy 로드
+  sb.from('works').select('img_src').eq('id', id).single().then(({ data: d }) => {
+    if (!d) return;
+    const imgs = getImgs(d);
+    if (imgs[0]) {
+      img.src=imgs[0]; img.style.display='block';
+      img.style.cursor='zoom-in';
+      img.onclick=()=>openLightbox(imgs[0],w.title);
+      wrap.style.display='block';
+    }
+    if (imgs[1]) {
+      img2.src=imgs[1]; img2.style.display='block';
+      img2.style.cursor='zoom-in';
+      img2.onclick=()=>openLightbox(imgs[1],w.title);
+      wrap.style.display='block';
+    }
+  });
   document.getElementById('award-modal-bd').classList.add('open');
   document.body.style.overflow='hidden';
 }
