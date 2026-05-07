@@ -1785,7 +1785,8 @@ function makeAwardCard(w, i, prefix='aw') {
           ${w.dept ? `<div class="award-career-tag">${esc(w.dept)}</div>` : ''}
         </div>` : ''}
       </div>
-      <div class="award-footer">
+      <div class="award-footer" style="display:flex;align-items:center;justify-content:space-between;">
+        <button class="edit-btn" onclick="openEdit('${w.id}')">EDIT</button>
         <button class="award-detail-btn" onclick="openAwardModal('${w.id}')">자세히 보기 →</button>
       </div>
     </div>`;
