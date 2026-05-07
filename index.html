@@ -1062,6 +1062,18 @@ footer {
       color:var(--ink-l); letter-spacing:2px;
     ">작품을 불러오는 중…</div>
     <div class="work-grid" id="work-grid"></div>
+    <div id="load-more-wrap" style="display:none;text-align:center;margin-top:48px;">
+      <button id="load-more-btn" onclick="loadMoreWorks()" style="
+        font-family:var(--fk);font-size:13px;font-weight:500;letter-spacing:2px;
+        color:var(--ink-mid);background:transparent;
+        border:1px solid var(--ink-ll);padding:14px 48px;cursor:pointer;
+        transition:all 0.25s;
+      " onmouseover="this.style.borderColor='var(--gold)';this.style.color='var(--gold)'"
+         onmouseout="this.style.borderColor='var(--ink-ll)';this.style.color='var(--ink-mid)'">
+        더 보기
+      </button>
+      <div id="load-more-info" style="margin-top:12px;font-family:var(--fd);font-style:italic;font-size:12px;color:var(--ink-l);letter-spacing:1px;"></div>
+    </div>
   </div>
 </section>
 
@@ -1546,16 +1558,74 @@ let editFiles = [];
 let awFiles = [];
 let selectedAward = { award: '', icon: '' };
 
+/* ── 페이지네이션 상태 ── */
+const PAGE_SIZE = 20;
+let galleryPage  = 0;   // 현재까지 로드한 페이지 (0-based)
+let totalCount   = 0;   // 전체 작품 수 (필터 포함)
+let isLoadingMore = false;
+
 /* ── 데이터 로드 ── */
+/* ── 작품 로드 (페이지네이션) ── */
 async function loadWorks() {
+  // 첫 로드: 수상작(awards)은 전체 로드, 갤러리는 첫 페이지만
+  galleryPage = 0;
+  works = [];
+  document.getElementById('gallery-loading').style.display = 'block';
+  document.getElementById('work-grid').innerHTML = '';
+  document.getElementById('load-more-wrap').style.display = 'none';
+
   try {
-    const { data, error } = await sb.from('works').select('*').order('created_at', { ascending: false });
-    if (error) { console.error('loadWorks error:', JSON.stringify(error)); showToast('❌ 데이터 로드 실패: ' + (error.message || error.code || JSON.stringify(error))); return; }
+    // 수상작은 전체 로드 (보통 소수)
+    const { data: awardData, error: awardErr } = await sb.from('works')
+      .select('*').not('award','is',null).neq('award','').order('created_at', { ascending: false });
+    if (awardErr) throw awardErr;
+
+    // 갤러리 첫 페이지 + 전체 카운트
+    let query = sb.from('works').select('*', { count: 'exact' }).order('created_at', { ascending: false });
+    if (filter !== 'all') query = query.eq('grade', filter);
+    const { data, error, count } = await query.range(0, PAGE_SIZE - 1);
+    if (error) throw error;
+
+    totalCount = count || 0;
     works = data || [];
-    renderWorks();
+    awardWorks = awardData || [];
+
+    document.getElementById('gallery-loading').style.display = 'none';
+    renderWorks(false);
     renderAwards();
-  } catch(e) { console.error(e); }
+  } catch(e) {
+    console.error('loadWorks error:', JSON.stringify(e));
+    showToast('❌ 데이터 로드 실패: ' + (e.message || JSON.stringify(e)));
+    document.getElementById('gallery-loading').style.display = 'none';
+  }
 }
+
+async function loadMoreWorks() {
+  if (isLoadingMore) return;
+  isLoadingMore = true;
+  const btn = document.getElementById('load-more-btn');
+  if (btn) btn.textContent = '불러오는 중…';
+
+  galleryPage++;
+  const from = galleryPage * PAGE_SIZE;
+  const to   = from + PAGE_SIZE - 1;
+
+  try {
+    let query = sb.from('works').select('*').order('created_at', { ascending: false });
+    if (filter !== 'all') query = query.eq('grade', filter);
+    const { data, error } = await query.range(from, to);
+    if (error) throw error;
+    works = [...works, ...(data || [])];
+    renderWorks(true);
+  } catch(e) {
+    showToast('❌ 로드 실패: ' + e.message);
+    galleryPage--;
+  }
+
+  isLoadingMore = false;
+  if (btn) btn.textContent = '더 보기';
+}
+window.loadMoreWorks = loadMoreWorks;
 
 /* img_src 파싱 헬퍼 — JSON 배열이면 배열, 단일 문자열이면 [str], null이면 [] */
 function getImgs(w) {
@@ -1566,37 +1636,51 @@ function getImgs(w) {
   } catch { return [w.img_src]; }
 }
 
+/* ── Supabase Storage 업로드 헬퍼 ── */
+async function uploadImg(fileObj) {
+  // fileObj.file 이 있으면 Storage 업로드, 없으면 기존 base64 그대로 반환
+  if (!fileObj) return null;
+  if (!fileObj.file) return fileObj.src; // 기존 base64 데이터 (하위 호환)
+  const ext  = fileObj.file.name.split('.').pop() || 'jpg';
+  const path = `works/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
+  const { error } = await sb.storage.from('images').upload(path, fileObj.file, { upsert: false });
+  if (error) throw error;
+  const { data } = sb.storage.from('images').getPublicUrl(path);
+  return data.publicUrl;
+}
+
 /* ── 실시간 구독 ── */
 sb.channel('works-realtime')
   .on('postgres_changes', { event: '*', schema: 'public', table: 'works' }, () => loadWorks())
   .subscribe();
 
 function updateStats() {
-  const n = works.length;
   const hc = document.getElementById('hero-count');
   const gc = document.getElementById('gallery-count');
-  if (hc) hc.textContent = n + '점';
-  if (gc) gc.textContent = n;
+  if (hc) hc.textContent = totalCount + '점';
+  if (gc) gc.textContent = totalCount;
 }
 
-/* ── 전시 갤러리 렌더링 (모든 작품) ── */
-function renderWorks() {
+/* ── 전시 갤러리 렌더링 ── */
+function renderWorks(append = false) {
   const grid = document.getElementById('work-grid');
   if (!grid) return;
-  const list = filter === 'all' ? works : works.filter(w => w.grade === filter);
   updateStats();
 
-  if (!list.length) {
+  if (!works.length && !append) {
     grid.innerHTML = `<div class="empty-state"><div class="es-en">No works yet</div><div class="es-kr">아직 등록된 작품이 없습니다.</div></div>`;
+    document.getElementById('load-more-wrap').style.display = 'none';
     return;
   }
 
-  grid.innerHTML = list.map((w, i) => {
+  // append 모드: 새로 추가된 마지막 PAGE_SIZE개만 렌더링해서 이어붙임
+  const startIdx = append ? Math.max(0, works.length - PAGE_SIZE) : 0;
+  const newCards = works.slice(startIdx).map((w, i) => {
     const g = GL[w.grade] || GL['1'];
     const liked = !!myLikes[w.id];
     const medalBadge = w.icon ? `<div style="position:absolute;top:10px;left:10px;font-size:26px;z-index:3;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.5));">${w.icon}</div>` : '';
     return `
-    <div class="work-card" style="animation-delay:${i * 0.06}s;position:relative;">
+    <div class="work-card" style="animation-delay:${i * 0.04}s;position:relative;">
       ${medalBadge}
       <div class="work-card-accent ${g.accClass}"></div>
       <div class="work-card-mat">
@@ -1630,18 +1714,34 @@ function renderWorks() {
       </div>
     </div>`;
   }).join('');
+
+  if (append) {
+    grid.insertAdjacentHTML('beforeend', newCards);
+  } else {
+    grid.innerHTML = newCards;
+  }
+
+  // 더 보기 버튼 표시 여부
+  const wrap = document.getElementById('load-more-wrap');
+  const info = document.getElementById('load-more-info');
+  if (works.length < totalCount) {
+    wrap.style.display = 'block';
+    if (info) info.textContent = `${works.length} / ${totalCount}점 표시 중`;
+  } else {
+    wrap.style.display = 'none';
+  }
 }
 
 /* ── 수상작 섹션 렌더링 (award 있는 것만) ── */
+let awardWorks = [];
 function renderAwards() {
   const grid = document.getElementById('award-grid');
   if (!grid) return;
-  const awardList = works.filter(w => w.award && w.award !== '');
-  if (!awardList.length) {
+  if (!awardWorks.length) {
     grid.innerHTML = `<div class="award-empty"><div class="ae-en">No awards yet</div><div class="ae-kr">수상작이 아직 등록되지 않았습니다.</div></div>`;
     return;
   }
-  grid.innerHTML = awardList.map((w, i) => `
+  grid.innerHTML = awardWorks.map((w, i) => `
     <div class="award-card" style="animation-delay:${i*0.06}s">
       ${w.icon ? `<div class="award-badge ${awardBadgeClass(w.award)}">${w.icon}</div>` : ''}
       <div class="award-card-mat">
@@ -1669,11 +1769,30 @@ function awardBadgeClass(award) {
 }
 
 /* ── 필터 ── */
-function filterWorks(g, btn) {
+async function filterWorks(g, btn) {
   filter = g;
   document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
-  renderWorks();
+  // 필터 변경 시 DB에서 다시 첫 페이지 로드
+  galleryPage = 0;
+  works = [];
+  document.getElementById('work-grid').innerHTML = '';
+  document.getElementById('load-more-wrap').style.display = 'none';
+  document.getElementById('gallery-loading').style.display = 'block';
+
+  try {
+    let query = sb.from('works').select('*', { count: 'exact' }).order('created_at', { ascending: false });
+    if (filter !== 'all') query = query.eq('grade', filter);
+    const { data, error, count } = await query.range(0, PAGE_SIZE - 1);
+    if (error) throw error;
+    totalCount = count || 0;
+    works = data || [];
+    document.getElementById('gallery-loading').style.display = 'none';
+    renderWorks(false);
+  } catch(e) {
+    showToast('❌ 로드 실패: ' + e.message);
+    document.getElementById('gallery-loading').style.display = 'none';
+  }
 }
 window.filterWorks = filterWorks;
 
@@ -1725,7 +1844,7 @@ window.closeModal = () => { document.getElementById('modal-bd').classList.remove
 
 /* ── 수상작 모달 ── */
 function openAwardModal(id) {
-  const w = works.find(x => x.id === id); if (!w) return;
+  const w = awardWorks.find(x => x.id === id) || works.find(x => x.id === id); if (!w) return;
   document.getElementById('am-icon').textContent       = w.icon || '';
   document.getElementById('am-award-name').textContent = w.award || '';
   document.getElementById('am-title').textContent      = w.title;
@@ -1780,11 +1899,16 @@ window.openLightbox  = openLightbox;
 window.closeLightbox = closeLightbox;
 
 /* ── 파일 업로드 ── */
+let fileObjects = []; // 실제 File 객체 보관 (Storage 업로드용)
+
 function handleFiles(flist) {
   Array.from(flist).forEach(f => {
     if (f.size > 10*1024*1024) { showToast('파일 크기는 10MB 이하여야 합니다.'); return; }
     const r = new FileReader();
-    r.onload = ev => { files.push({ src: ev.target.result }); renderPreview(); };
+    r.onload = ev => {
+      files.push({ src: ev.target.result, file: f });
+      renderPreview();
+    };
     r.readAsDataURL(f);
   });
 }
@@ -1808,7 +1932,16 @@ async function submitWork() {
   if (!grade||!cls||!name||!title) { showToast('학년, 반, 이름, 작품 제목은 필수입니다.'); return; }
 
   const btn = document.querySelector('#upload .submit-btn');
-  if (btn) { btn.textContent = '등록 중...'; btn.disabled = true; }
+  if (btn) { btn.textContent = '업로드 중...'; btn.disabled = true; }
+
+  let img_src = null;
+  try {
+    if (files.length) img_src = await uploadImg(files[0]);
+  } catch(e) {
+    showToast('❌ 이미지 업로드 실패: ' + e.message);
+    if (btn) { btn.textContent = 'Register Work'; btn.disabled = false; }
+    return;
+  }
 
   const { error } = await sb.from('works').insert([{
     sid:      document.getElementById('inp-sid').value.trim(),
@@ -1818,7 +1951,7 @@ async function submitWork() {
     dept:     document.getElementById('inp-dept').value.trim(),
     univ:     document.getElementById('inp-univ').value.trim(),
     hs:       document.getElementById('inp-hs').value.trim(),
-    img_src:  files.length ? files[0].src : null,
+    img_src,
     likes:    0,
     award:    null,
     icon:     null,
@@ -1881,7 +2014,10 @@ async function saveEdit() {
     univ: document.getElementById('edit-univ').value.trim(),
     hs:   document.getElementById('edit-hs').value.trim(),
   };
-  if(editFiles.length>0){ updated.img_src=editFiles[0].src; }
+  if(editFiles.length>0){
+    try { updated.img_src = await uploadImg(editFiles[0]); }
+    catch(e) { showToast('❌ 이미지 업로드 실패: '+e.message); return; }
+  }
   else if(ci.style.display==='none'){ updated.img_src=null; }
   const { error } = await sb.from('works').update(updated).eq('id', id);
   if(error){ showToast('❌ 수정 실패: '+error.message); return; }
@@ -1911,7 +2047,7 @@ function handleEditFiles(flist){
   if(f.size>10*1024*1024){showToast('파일 크기는 10MB 이하여야 합니다.');return;}
   const r=new FileReader();
   r.onload=ev=>{
-    editFiles=[{src:ev.target.result}];
+    editFiles=[{src:ev.target.result, file:f}];
     const ci=document.getElementById('edit-current-img');
     ci.src=ev.target.result; ci.style.display='block';
     document.getElementById('edit-img-clear').style.display='inline-block';
@@ -1936,7 +2072,20 @@ async function submitAward() {
   if (!name||!grade||!cls||!title) { showToast('이름, 학년, 반, 작품 제목은 필수입니다.'); return; }
 
   const btn = document.querySelector('.award-form-wrap .submit-btn');
-  if (btn) { btn.textContent = '등록 중...'; btn.disabled = true; }
+  if (btn) { btn.textContent = '업로드 중...'; btn.disabled = true; }
+
+  let urls = [];
+  try {
+    urls = await Promise.all(awFiles.map(f => uploadImg(f)));
+  } catch(e) {
+    showToast('❌ 이미지 업로드 실패: ' + e.message);
+    if (btn) { btn.textContent = '수상작 등록하기'; btn.disabled = false; }
+    return;
+  }
+
+  const img_src = urls.length === 0 ? null
+                : urls.length === 1 ? urls[0]
+                : JSON.stringify(urls);
 
   const { error } = await sb.from('works').insert([{
     sid:      document.getElementById('aw-sid').value.trim(),
@@ -1946,7 +2095,7 @@ async function submitAward() {
     dept:     document.getElementById('aw-dept').value.trim(),
     award:    selectedAward.award || null,
     icon:     selectedAward.icon  || null,
-    img_src:  awFiles.length ? JSON.stringify(awFiles.map(f=>f.src)) : null,
+    img_src,
     likes:    0,
   }]);
 
@@ -1977,7 +2126,7 @@ function handleAwFiles(flist) {
     if(f.size>10*1024*1024){showToast('파일 크기는 10MB 이하여야 합니다.');return;}
     const r=new FileReader();
     r.onload=ev=>{
-      awFiles.push({src:ev.target.result});
+      awFiles.push({src:ev.target.result, file:f});
       loaded++;
       if(loaded===toAdd.length) renderAwPreview();
     };
